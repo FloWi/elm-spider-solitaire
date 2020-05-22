@@ -1,0 +1,26 @@
+{
+  "name": "elm-spider-solitaire",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "elm-app build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FloWi/elm-spider-solitaire.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FloWi/elm-spider-solitaire/issues"
+  },
+  "homepage": "https://github.com/FloWi/elm-spider-solitaire#readme",
+  "devDependencies": {
+    "create-elm-app": "^4.2.23"
+  }
+}
