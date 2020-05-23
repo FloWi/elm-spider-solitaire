@@ -1,9 +1,11 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, div, h1, h2, h3, img, p, text)
-import Html.Attributes exposing (src)
+import Html exposing (Html)
+import HtmlRenderer exposing (..)
 import List.Extra
+import Messages exposing (..)
+import Model exposing (..)
 import Random
 import Random.List
 
@@ -17,63 +19,6 @@ import Random.List
      - 5 sets à 10 cards to draw in the draw-card slot (50)
      - 1 empty slot where completed sets are being placed
 -}
----- MODEL ----
-
-
-type Suit
-    = Clubs
-    | Diamonds
-    | Hearts
-    | Spades
-
-
-type Rank
-    = Ace
-    | King
-    | Queen
-    | Jack
-    | R10
-    | R9
-    | R8
-    | R7
-    | R6
-    | R5
-    | R4
-    | R3
-    | R2
-
-
-type alias Card =
-    { suit : Suit
-    , rank : Rank
-    , isFacedUp : Bool
-    }
-
-
-type alias Game =
-    { gameSlots : List (List Card)
-    , drawCardSlots : List (List Card)
-    , moves : List Move
-    , completedCardSlots : List (List Card)
-    }
-
-
-type CardStack
-    = List Card
-
-
-type alias CardIndex =
-    { slotIndex : Int, cardIndex : Int }
-
-
-type Move
-    = DrawNewCards
-    | MoveCardStack { startCardIndex : CardIndex, cardStack : CardStack, destinationSlotIndex : Int }
-
-
-type Model
-    = UninitializedGame
-    | RunningGame Game
 
 
 init : ( Model, Cmd Msg )
@@ -165,10 +110,6 @@ initializeGame shuffledCards =
 ---- UPDATE ----
 
 
-type Msg
-    = InitializedGame Game
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -182,127 +123,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    case model of
-        UninitializedGame ->
-            div []
-                [ h1 [] [ text "uninitialized" ] ]
-
-        RunningGame game ->
-            div []
-                [ h1 [] [ text "Game is on" ]
-                , renderGameSlots "Game Slots" game.gameSlots
-                , renderGameSlots "Draw new card stacks" game.drawCardSlots
-                , renderGameSlots "completed card slots" game.completedCardSlots
-                ]
-
-
-suitString : Suit -> String
-suitString suit =
-    case suit of
-        Clubs ->
-            "♣"
-
-        Diamonds ->
-            "♦"
-
-        Hearts ->
-            "♥"
-
-        Spades ->
-            "♠"
-
-
-rankString : Rank -> String
-rankString rank =
-    case rank of
-        Ace ->
-            "A"
-
-        King ->
-            "K"
-
-        Queen ->
-            "Q"
-
-        Jack ->
-            "J"
-
-        R10 ->
-            "10"
-
-        R9 ->
-            "9"
-
-        R8 ->
-            "8"
-
-        R7 ->
-            "7"
-
-        R6 ->
-            "6"
-
-        R5 ->
-            "5"
-
-        R4 ->
-            "4"
-
-        R3 ->
-            "3"
-
-        R2 ->
-            "2"
-
-
-renderCard : Card -> Html msg
-renderCard card =
-    let
-        rank =
-            rankString card.rank
-
-        suit =
-            suitString card.suit
-
-        hidden : List (Html.Attribute msg)
-        hidden =
-            if card.isFacedUp then
-                []
-
-            else
-                [ Html.Attributes.class "hiddenCard" ]
-    in
-    p hidden [ text (suit ++ rank) ]
-
-
-renderGameSlots : String -> List (List Card) -> Html msg
-renderGameSlots label gameSlots =
-    let
-        renderGameSlot : List Card -> Html msg
-        renderGameSlot cards =
-            cards
-                |> List.map (\card -> p [] [ renderCard card ])
-                |> div []
-
-        gameSlotDivs : List (Html msg)
-        gameSlotDivs =
-            gameSlots
-                |> List.indexedMap Tuple.pair
-                |> List.map
-                    (\( i, cards ) ->
-                        div
-                            []
-                            [ text ("stack " ++ String.fromInt i)
-                            , renderGameSlot cards
-                            ]
-                    )
-    in
-    div []
-        [ h2 [] [ text label ]
-        , div
-            [ Html.Attributes.class "gameStacks" ]
-            gameSlotDivs
-        ]
+    renderHtml model
 
 
 
