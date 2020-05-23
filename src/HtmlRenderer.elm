@@ -9,12 +9,6 @@ import Model exposing (..)
 renderHtml : Model -> Html Msg
 renderHtml model =
     case model of
-        UninitializedGame ->
-            div
-                [ Html.Attributes.class "gameScreen"
-                ]
-                [ h1 [] [ text "uninitialized" ] ]
-
         RunningGame game ->
             let
                 debugScreenElements =

@@ -1,14 +1,14 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, div, fieldset, h1, input, label, text)
-import Html.Attributes exposing (checked, style, type_)
-import Html.Events exposing (onClick)
+import Html exposing (Html, button, div, fieldset, h1, input, label, p, text)
+import Html.Attributes exposing (checked, placeholder, style, type_, value)
+import Html.Events exposing (onClick, onInput)
 import HtmlRenderer exposing (renderAllCardsAsImages, renderHtml)
 import List.Extra
 import Messages exposing (..)
 import Model exposing (..)
-import Random
+import Random exposing (..)
 import Random.List
 import SvgRenderer exposing (..)
 
@@ -26,10 +26,33 @@ import SvgRenderer exposing (..)
 
 init : ( Model, Cmd Msg )
 init =
-    ( UninitializedGame, Random.generate InitializedGame (Random.map initializeGame (Random.List.shuffle calcGameCards)) )
+    ( createGameBySeed 42
+    , Cmd.none
+    )
+
+
+createGameBySeed : Int -> Model
+createGameBySeed seedValue =
+    let
+        seed =
+            Random.initialSeed seedValue
+
+        cardsGenerator : Generator (List Card)
+        cardsGenerator =
+            Random.List.shuffle calcGameCards
+
+        ( cards, seed_ ) =
+            Random.step cardsGenerator seed
+
+        game =
+            initializeGame cards seedValue
+    in
+    RunningGame game
 
 
 
+--generate : (a → msg) → Generator a → Cmd msg
+--generate tagger generator defined in Random
 --foldl : (a → b → b) → b → List a → b
 --foldl func acc list defined in List
 
@@ -64,8 +87,8 @@ faceUpLastCard cards =
             []
 
 
-initializeGame : List Card -> Game
-initializeGame shuffledCards =
+initializeGame : List Card -> Int -> Game
+initializeGame shuffledCards seedValue =
     case chunkList shuffledCards [ 54, 50 ] of
         [ gameSlotCards, newCardSlots ] ->
             let
@@ -78,6 +101,8 @@ initializeGame shuffledCards =
             , moves = []
             , completedCardSlots = []
             , isDebug = True
+            , seedValue = seedValue
+            , seedValueTextboxEntry = seedValue
             }
 
         _ ->
@@ -86,6 +111,8 @@ initializeGame shuffledCards =
             , moves = []
             , completedCardSlots = []
             , isDebug = True
+            , seedValue = seedValue
+            , seedValueTextboxEntry = seedValue
             }
 
 
@@ -101,11 +128,24 @@ update msg model =
 
         ToggleDebug ->
             case model of
-                UninitializedGame ->
-                    ( model, Cmd.none )
-
                 RunningGame game ->
                     ( RunningGame { game | isDebug = not game.isDebug }, Cmd.none )
+
+        NewGameWithSeed seedValue ->
+            ( createGameBySeed seedValue, Cmd.none )
+
+        NewGameWithRandomSeed ->
+            ( model, Random.generate NewGameWithSeed (Random.int Random.minInt Random.maxInt) )
+
+        ChangeSeedValueEntry newValue ->
+            case String.toInt newValue of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just parsed ->
+                    case model of
+                        RunningGame game ->
+                            ( RunningGame { game | seedValueTextboxEntry = parsed }, Cmd.none )
 
 
 
@@ -124,13 +164,10 @@ checkbox msg name isChecked =
 view : Model -> Html Msg
 view model =
     let
-        isDebug =
+        ( isDebug, seedValue, seedValueTextboxEntry ) =
             case model of
-                UninitializedGame ->
-                    False
-
                 RunningGame game ->
-                    game.isDebug
+                    ( game.isDebug, game.seedValue, game.seedValueTextboxEntry )
     in
     div
         [ Html.Attributes.class "gameView"
@@ -143,6 +180,10 @@ view model =
         , div [ Html.Attributes.class "sidebar" ]
             [ h1 [] [ text "Sidebar" ]
             , fieldset [] [ checkbox ToggleDebug "debugView" isDebug ]
+            , input [ placeholder "seedvalue", value (String.fromInt seedValueTextboxEntry), onInput ChangeSeedValueEntry ] []
+            , button [ onClick (NewGameWithSeed seedValueTextboxEntry) ] [ text "Restart with seed" ]
+            , button [ onClick NewGameWithRandomSeed ] [ text "Restart with random seed" ]
+            , p [] [ text ("entered seedValue: " ++ String.fromInt seedValueTextboxEntry) ]
             ]
         , div [ Html.Attributes.class "footer" ]
             [ h1 [] [ text "Footer" ]

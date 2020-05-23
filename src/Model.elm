@@ -39,6 +39,8 @@ type alias Game =
     , moves : List Move
     , completedCardSlots : List (List Card)
     , isDebug : Bool
+    , seedValue : Int
+    , seedValueTextboxEntry : Int
     }
 
 
@@ -56,8 +58,7 @@ type Move
 
 
 type Model
-    = UninitializedGame
-    | RunningGame Game
+    = RunningGame Game
 
 
 suitUtf8Symbol : Suit -> String

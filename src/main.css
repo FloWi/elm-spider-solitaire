@@ -53,7 +53,7 @@ img {
   display: grid;
   grid-gap: 10px;
   grid-template-columns: 1fr 6fr 3fr;
-  grid-template-rows: 1fr 10fr 1fr;
+  grid-template-rows: 1fr 12fr 1fr;
   grid-template-areas:
     "....... header  header"
     "sidebar content content"
@@ -74,7 +74,6 @@ img {
   grid-gap: 10px;
   grid-template-columns: 5fr 1fr;
   grid-template-areas: "gameScreen debugScreen";
-
 }
 
 .header {
@@ -90,7 +89,10 @@ img {
 .gameScreen {
   grid-area: gameScreen;
   background-color: #325032;
+}
 
+.gameScreen h1 {
+  color: #cecece;
 }
 
 .debugScreen {
