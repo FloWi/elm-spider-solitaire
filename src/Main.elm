@@ -1,8 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, div, h1, text)
-import Html.Attributes
+import Html exposing (Html, div, fieldset, h1, input, label, text)
+import Html.Attributes exposing (checked, style, type_)
+import Html.Events exposing (onClick)
 import HtmlRenderer exposing (renderAllCardsAsImages, renderHtml)
 import List.Extra
 import Messages exposing (..)
@@ -76,6 +77,7 @@ initializeGame shuffledCards =
             , drawCardSlots = chunkList newCardSlots (List.repeat 5 10)
             , moves = []
             , completedCardSlots = []
+            , isDebug = True
             }
 
         _ ->
@@ -83,6 +85,7 @@ initializeGame shuffledCards =
             , drawCardSlots = []
             , moves = []
             , completedCardSlots = []
+            , isDebug = True
             }
 
 
@@ -96,13 +99,39 @@ update msg model =
         InitializedGame game ->
             ( RunningGame game, Cmd.none )
 
+        ToggleDebug ->
+            case model of
+                UninitializedGame ->
+                    ( model, Cmd.none )
+
+                RunningGame game ->
+                    ( RunningGame { game | isDebug = not game.isDebug }, Cmd.none )
+
 
 
 ---- VIEW ----
 
 
+checkbox : Msg -> String -> Bool -> Html Msg
+checkbox msg name isChecked =
+    label
+        [ style "padding" "20px" ]
+        [ input [ type_ "checkbox", checked isChecked, onClick msg ] []
+        , text name
+        ]
+
+
 view : Model -> Html Msg
 view model =
+    let
+        isDebug =
+            case model of
+                UninitializedGame ->
+                    False
+
+                RunningGame game ->
+                    game.isDebug
+    in
     div
         [ Html.Attributes.class "gameView"
         ]
@@ -113,6 +142,7 @@ view model =
             model
         , div [ Html.Attributes.class "sidebar" ]
             [ h1 [] [ text "Sidebar" ]
+            , fieldset [] [ checkbox ToggleDebug "debugView" isDebug ]
             ]
         , div [ Html.Attributes.class "footer" ]
             [ h1 [] [ text "Footer" ]

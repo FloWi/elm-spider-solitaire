@@ -5,3 +5,4 @@ import Model exposing (..)
 
 type Msg
     = InitializedGame Game
+    | ToggleDebug

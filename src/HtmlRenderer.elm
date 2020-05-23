@@ -16,15 +16,23 @@ renderHtml model =
                 [ h1 [] [ text "uninitialized" ] ]
 
         RunningGame game ->
+            let
+                debugScreenElements =
+                    if game.isDebug then
+                        [ renderGameSlots "Game Slots" game.gameSlots
+                        , renderGameSlots "Draw new card stacks" game.drawCardSlots
+                        , renderGameSlots "completed card slots" game.completedCardSlots
+                        ]
+
+                    else
+                        []
+            in
             div [ Html.Attributes.class "content" ]
                 [ div [ Html.Attributes.class "gameScreen" ]
                     [ renderAllCardsAsImages model
                     ]
                 , div [ Html.Attributes.class "debugScreen" ]
-                    [ renderGameSlots "Game Slots" game.gameSlots
-                    , renderGameSlots "Draw new card stacks" game.drawCardSlots
-                    , renderGameSlots "completed card slots" game.completedCardSlots
-                    ]
+                    debugScreenElements
                 ]
 
 

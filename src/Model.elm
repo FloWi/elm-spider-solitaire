@@ -38,6 +38,7 @@ type alias Game =
     , drawCardSlots : List (List Card)
     , moves : List Move
     , completedCardSlots : List (List Card)
+    , isDebug : Bool
     }
 
 
