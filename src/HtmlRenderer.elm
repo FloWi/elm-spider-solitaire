@@ -29,7 +29,7 @@ renderCard card =
             rankString card.rank
 
         suit =
-            suitString card.suit
+            suitUtf8Symbol card.suit
 
         hidden : List (Html.Attribute msg)
         hidden =
@@ -70,3 +70,33 @@ renderGameSlots label gameSlots =
             [ Html.Attributes.class "gameStacks" ]
             gameSlotDivs
         ]
+
+
+renderAllCardsAsImages : Model -> Html Msg
+renderAllCardsAsImages model =
+    let
+        deck =
+            List.map (\card -> { card | isFacedUp = True }) calcDeck
+                ++ [ { suit = Clubs, rank = Jack, isFacedUp = False } ]
+    in
+    div []
+        [ h1 [] [ text "Game is on" ]
+        , renderDeck deck
+        ]
+
+
+renderDeck : List Card -> Html Msg
+renderDeck cards =
+    let
+        images =
+            cards
+                |> List.map
+                    (\card ->
+                        Html.img
+                            [ Html.Attributes.src (cardImgUrl card) ]
+                            []
+                    )
+    in
+    div
+        [ Html.Attributes.class "allCards" ]
+        images

@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (Html)
-import HtmlRenderer exposing (..)
+import HtmlRenderer exposing (renderAllCardsAsImages)
 import List.Extra
 import Messages exposing (..)
 import Model exposing (..)
 import Random
 import Random.List
+import SvgRenderer exposing (..)
 
 
 
@@ -23,14 +24,7 @@ import Random.List
 
 init : ( Model, Cmd Msg )
 init =
-    ( UninitializedGame, Random.generate InitializedGame (Random.map initializeGame (Random.List.shuffle calcDecks)) )
-
-
-cartesian : List a -> List b -> List ( a, b )
-cartesian xs ys =
-    List.concatMap
-        (\x -> List.map (\y -> ( x, y )) ys)
-        xs
+    ( UninitializedGame, Random.generate InitializedGame (Random.map initializeGame (Random.List.shuffle calcGameCards)) )
 
 
 
@@ -53,24 +47,9 @@ chunkList items chunkSizes =
     helper items chunkSizes []
 
 
-calcDecks : List Card
-calcDecks =
-    let
-        suits =
-            [ Clubs, Diamonds, Hearts, Spades ]
-
-        ranks =
-            [ Ace, King, Queen, Jack, R10, R9, R8, R7, R6, R5, R4, R3, R2 ]
-
-        deck : List Card
-        deck =
-            List.map (\( s, r ) -> { suit = s, rank = r, isFacedUp = False }) (cartesian suits ranks)
-
-        allCards : List Card
-        allCards =
-            List.append deck deck
-    in
-    allCards
+calcGameCards : List Card
+calcGameCards =
+    List.append calcDeck calcDeck
 
 
 faceUpLastCard : List Card -> List Card
@@ -123,7 +102,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    renderHtml model
+    renderAllCardsAsImages model
 
 
 

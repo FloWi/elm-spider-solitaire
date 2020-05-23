@@ -31,6 +31,14 @@ img {
   grid-template-rows: repeat(1, 1fr);
 }
 
+.allCards {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  width: 1vw;
+  height: 1vh;
+}
+
 .hiddenCard {
   color: darkgrey;
 }

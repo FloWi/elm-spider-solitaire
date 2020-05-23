@@ -22,5 +22,6 @@
   "homepage": "https://github.com/FloWi/elm-spider-solitaire#readme",
   "devDependencies": {
     "create-elm-app": "^4.2.23"
-  }
+  },
+  "dependencies": {}
 }
