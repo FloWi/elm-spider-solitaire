@@ -10,15 +10,21 @@ renderHtml : Model -> Html Msg
 renderHtml model =
     case model of
         UninitializedGame ->
-            div []
+            div
+                [ Html.Attributes.class "gameScreen"
+                ]
                 [ h1 [] [ text "uninitialized" ] ]
 
         RunningGame game ->
-            div []
-                [ h1 [] [ text "Game is on" ]
-                , renderGameSlots "Game Slots" game.gameSlots
-                , renderGameSlots "Draw new card stacks" game.drawCardSlots
-                , renderGameSlots "completed card slots" game.completedCardSlots
+            div [ Html.Attributes.class "content" ]
+                [ div [ Html.Attributes.class "gameScreen" ]
+                    [ renderAllCardsAsImages model
+                    ]
+                , div [ Html.Attributes.class "debugScreen" ]
+                    [ renderGameSlots "Game Slots" game.gameSlots
+                    , renderGameSlots "Draw new card stacks" game.drawCardSlots
+                    , renderGameSlots "completed card slots" game.completedCardSlots
+                    ]
                 ]
 
 
@@ -59,7 +65,7 @@ renderGameSlots label gameSlots =
                     (\( i, cards ) ->
                         div
                             []
-                            [ text ("stack " ++ String.fromInt i)
+                            [ text (String.fromInt i)
                             , renderGameSlot cards
                             ]
                     )
@@ -93,7 +99,9 @@ renderDeck cards =
                 |> List.map
                     (\card ->
                         Html.img
-                            [ Html.Attributes.src (cardImgUrl card) ]
+                            [ Html.Attributes.src (cardImgUrl card)
+                            , Html.Attributes.class "cardImage"
+                            ]
                             []
                     )
     in

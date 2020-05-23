@@ -1,8 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html)
-import HtmlRenderer exposing (renderAllCardsAsImages)
+import Html exposing (Html, div, h1, text)
+import Html.Attributes
+import HtmlRenderer exposing (renderAllCardsAsImages, renderHtml)
 import List.Extra
 import Messages exposing (..)
 import Model exposing (..)
@@ -102,7 +103,21 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    renderAllCardsAsImages model
+    div
+        [ Html.Attributes.class "gameView"
+        ]
+        [ div [ Html.Attributes.class "header" ]
+            [ h1 [] [ text "Elm Spider Solitaire" ]
+            ]
+        , renderHtml
+            model
+        , div [ Html.Attributes.class "sidebar" ]
+            [ h1 [] [ text "Sidebar" ]
+            ]
+        , div [ Html.Attributes.class "footer" ]
+            [ h1 [] [ text "Footer" ]
+            ]
+        ]
 
 
 
