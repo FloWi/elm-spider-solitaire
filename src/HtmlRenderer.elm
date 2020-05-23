@@ -21,7 +21,15 @@ renderHtml model =
                     else
                         []
             in
-            div [ Html.Attributes.class "content" ]
+            div
+                [ Html.Attributes.class
+                    (if game.isDebug then
+                        "contentDebug"
+
+                     else
+                        "content"
+                    )
+                ]
                 [ div [ Html.Attributes.class "gameScreen" ]
                     [ renderAllCardsAsImages model
                     ]

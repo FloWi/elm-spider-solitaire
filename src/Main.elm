@@ -179,11 +179,12 @@ view model =
             model
         , div [ Html.Attributes.class "sidebar" ]
             [ h1 [] [ text "Sidebar" ]
-            , fieldset [] [ checkbox ToggleDebug "debugView" isDebug ]
-            , input [ placeholder "seedvalue", value (String.fromInt seedValueTextboxEntry), onInput ChangeSeedValueEntry ] []
-            , button [ onClick (NewGameWithSeed seedValueTextboxEntry) ] [ text "Restart with seed" ]
-            , button [ onClick NewGameWithRandomSeed ] [ text "Restart with random seed" ]
-            , p [] [ text ("entered seedValue: " ++ String.fromInt seedValueTextboxEntry) ]
+            , fieldset []
+                [ checkbox ToggleDebug "debugView" isDebug
+                , input [ placeholder "seedvalue", value (String.fromInt seedValueTextboxEntry), onInput ChangeSeedValueEntry ] []
+                , button [ onClick (NewGameWithSeed seedValueTextboxEntry) ] [ text "Restart with seed" ]
+                , button [ onClick NewGameWithRandomSeed ] [ text "Restart with random seed" ]
+                ]
             ]
         , div [ Html.Attributes.class "footer" ]
             [ h1 [] [ text "Footer" ]

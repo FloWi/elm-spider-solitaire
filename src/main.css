@@ -68,12 +68,19 @@ img {
   background-color: #acacac;
 }
 
-.content {
+.contentDebug {
   display: grid;
   grid-area: content;
   grid-gap: 10px;
   grid-template-columns: 5fr 1fr;
   grid-template-areas: "gameScreen debugScreen";
+}
+
+.content {
+  display: grid;
+  grid-area: content;
+  grid-gap: 10px;
+  grid-template-areas: "gameScreen";
 }
 
 .header {
@@ -92,7 +99,7 @@ img {
 }
 
 .gameScreen h1 {
-  color: #cecece;
+  color: #cbcbcb;
 }
 
 .debugScreen {
