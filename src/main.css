@@ -13,12 +13,13 @@ body {
   font-family: "Source Sans Pro", "Trebuchet MS", "Lucida Grande",
     "Bitstream Vera Sans", "Helvetica Neue", sans-serif;
   margin: 10px;
-  text-align: center;
+  /*text-align: center;*/
   color: #293c4b;
 }
 
 h1 {
   font-size: 30px;
+  padding-left: 10px;
 }
 
 img {
