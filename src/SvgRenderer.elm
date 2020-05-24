@@ -1,49 +1,135 @@
 module SvgRenderer exposing (..)
 
-import Html exposing (Html)
+import Html exposing (Html, div)
+import Html.Attributes
 import Messages exposing (..)
 import Model exposing (..)
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
+import Svg.Events exposing (onClick)
 
 
-renderGameBoard game =
-    svg
-        [ width "800"
-        , height "600"
-        , viewBox "0 0 1000 1000"
-        ]
-        [ renderCard
-            { suit = Clubs
-            , rank = Ace
-            , isFacedUp = True
-            }
-            { x = 10, y = 10 }
-        ]
+renderGameBoard model =
+    case model of
+        RunningGame game ->
+            let
+                ( containerClass, debugScreenDiv ) =
+                    if game.isDebug then
+                        ( "contentDebug"
+                        , [ renderDebugScreen game ]
+                        )
+
+                    else
+                        ( "content", [] )
+            in
+            div
+                [ Html.Attributes.class containerClass
+                ]
+                ([ div [ Html.Attributes.class "gameScreen" ]
+                    [ svg
+                        [ class "svgGameTable"
+                        , preserveAspectRatio "xMinYMin meet"
+                        , viewBox "0 0 1000 1000"
+                        ]
+                        [ renderPlaySlots game.gameSlots
+                        ]
+                    ]
+                 ]
+                    ++ debugScreenDiv
+                )
 
 
-type alias Location =
-    { x : Int
-    , y : Int
-    }
+renderDebugScreen : Game -> Html Msg
+renderDebugScreen game =
+    let
+        clickedCardText =
+            case game.clickedCard of
+                Just ( card, stackLocation ) ->
+                    let
+                        si =
+                            stackIndexInt stackLocation.stackIndex
+
+                        ci =
+                            cardIndexInt stackLocation.cardIndex
+
+                        stackTypeStr =
+                            stackTypeString stackLocation.stackType
+
+                        infoString =
+                            [ "clicked card: " ++ cardString card
+                            , "StackType: " ++ stackTypeStr
+                            , "StackIndex: " ++ String.fromInt si
+                            , "CardIndex: " ++ String.fromInt ci
+                            ]
+                                |> String.join "\n"
+                    in
+                    [ Html.pre
+                        [ Html.Attributes.align "left"
+                        ]
+                        [ Html.text
+                            infoString
+                        ]
+                    ]
+
+                Nothing ->
+                    []
+    in
+    div [ Html.Attributes.class "debugScreen" ]
+        ([ Html.h2 []
+            [ Html.text "DebugScreen" ]
+         ]
+            ++ clickedCardText
+        )
 
 
-renderCard : Card -> Location -> Svg Msg
-renderCard card location =
+renderPlaySlots : List (List Card) -> Svg Msg
+renderPlaySlots cardSlots =
+    cardSlots
+        |> List.indexedMap renderPlaySlot
+        |> Svg.g []
+
+
+renderPlaySlot : Int -> List Card -> Svg Msg
+renderPlaySlot slotIndex cards =
+    let
+        location =
+            { x = 25 + slotIndex * 75, y = 50 }
+    in
+    renderCardStack cards location (StackIndex slotIndex) PlayStack
+
+
+renderCardStack : List Card -> Location -> StackIndex -> StackType -> Svg Msg
+renderCardStack cards stackBasePosition stackindex stacktype =
+    cards
+        |> List.indexedMap
+            (\i card ->
+                let
+                    position =
+                        { stackBasePosition | y = stackBasePosition.y + i * 20 }
+
+                    stackLocation =
+                        { stackType = stacktype
+                        , stackIndex = stackindex
+                        , cardIndex = CardIndex i
+                        }
+                in
+                renderCard card stackLocation position
+            )
+        |> Svg.g []
+
+
+renderCard : Card -> StackLocation -> Location -> Svg Msg
+renderCard card stackLocation location =
     Svg.image
         [ x (String.fromInt location.x)
         , y (String.fromInt location.y)
 
         --, width "50"
-        , height "200"
+        , height "100"
         , xlinkHref (cardImgUrl card)
+        , onClick (ClickedCard stackLocation card)
         ]
         []
-
-
-renderCardStack : List Card -> Location -> Html Msg
-renderCardStack cards location =
-    Html.text "Hello card stack"
 
 
 

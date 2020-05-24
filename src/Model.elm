@@ -41,6 +41,7 @@ type alias Game =
     , isDebug : Bool
     , seedValue : Int
     , seedValueTextboxEntry : Int
+    , clickedCard : Maybe ( Card, StackLocation )
     }
 
 
@@ -48,13 +49,12 @@ type CardStack
     = List Card
 
 
-type alias CardIndex =
-    { slotIndex : Int, cardIndex : Int }
-
-
 type Move
     = DrawNewCards
-    | MoveCardStack { startCardIndex : CardIndex, cardStack : CardStack, destinationSlotIndex : Int }
+
+
+
+--| MoveCardStack { startCardIndex : CardIndex, cardStack : CardStack, destinationSlotIndex : Int }
 
 
 type Model
@@ -136,6 +136,56 @@ rankString rank =
             "2"
 
 
+type alias Location =
+    { x : Int
+    , y : Int
+    }
+
+
+type StackType
+    = PlayStack
+    | DrawStack
+
+
+type StackIndex
+    = StackIndex Int
+
+
+type CardIndex
+    = CardIndex Int
+
+
+stackIndexInt : StackIndex -> Int
+stackIndexInt si =
+    case si of
+        StackIndex i ->
+            i
+
+
+cardIndexInt : CardIndex -> Int
+cardIndexInt si =
+    case si of
+        CardIndex i ->
+            i
+
+
+stackTypeString : StackType -> String
+stackTypeString stackType =
+    case stackType of
+        PlayStack ->
+            "PlayStack"
+
+        DrawStack ->
+            "DrawStack"
+
+
+type alias StackLocation =
+    { stackType : StackType
+    , stackIndex : StackIndex
+    , cardIndex : CardIndex
+    }
+
+
 cartesian : List a -> List b -> List ( a, b )
 cartesian xs ys =
     List.concatMap
@@ -159,11 +209,16 @@ calcDeck =
     deck
 
 
+cardString : Card -> String
+cardString card =
+    rankString card.rank ++ suitString card.suit
+
+
 cardFileName : Card -> String
 cardFileName card =
     case card.isFacedUp of
         True ->
-            rankString card.rank ++ suitString card.suit ++ ".svg"
+            cardString card ++ ".svg"
 
         False ->
             "RED_BACK.svg"

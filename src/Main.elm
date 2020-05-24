@@ -103,6 +103,7 @@ initializeGame shuffledCards seedValue =
             , isDebug = True
             , seedValue = seedValue
             , seedValueTextboxEntry = seedValue
+            , clickedCard = Nothing
             }
 
         _ ->
@@ -113,6 +114,7 @@ initializeGame shuffledCards seedValue =
             , isDebug = True
             , seedValue = seedValue
             , seedValueTextboxEntry = seedValue
+            , clickedCard = Nothing
             }
 
 
@@ -147,6 +149,11 @@ update msg model =
                         RunningGame game ->
                             ( RunningGame { game | seedValueTextboxEntry = parsed }, Cmd.none )
 
+        ClickedCard stackLocation card ->
+            case model of
+                RunningGame game ->
+                    ( RunningGame { game | clickedCard = Just ( card, stackLocation ) }, Cmd.none )
+
 
 
 ---- VIEW ----
@@ -175,7 +182,7 @@ view model =
         [ div [ Html.Attributes.class "header" ]
             [ h1 [] [ text "Elm Spider Solitaire" ]
             ]
-        , renderHtml
+        , renderGameBoard
             model
         , div [ Html.Attributes.class "sidebar" ]
             [ h1 [] [ text "Sidebar" ]
