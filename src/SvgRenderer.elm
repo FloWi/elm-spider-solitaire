@@ -7,6 +7,7 @@ import Model exposing (..)
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick)
+import SvgRenderOptions exposing (renderOptions)
 
 
 renderGameBoard model =
@@ -93,38 +94,15 @@ renderPlaySlot : Int -> List Card -> Svg Msg
 renderPlaySlot slotIndex cards =
     let
         location =
-            { x = renderOptions.playStackLeftOffset + slotIndex * (round renderOptions.cardWidth + renderOptions.playStackXOffset)
+            { x = round (renderOptions.playStackXOffset + toFloat slotIndex * (renderOptions.cardWidth + renderOptions.playStackXOffset))
             , y = renderOptions.playStackTopOffset
             }
     in
     renderCardStack cards location (StackIndex slotIndex) PlayStack
 
 
-cardHeight =
-    200
 
-
-cardAspectRatio : Float
-cardAspectRatio =
-    224 / 313
-
-
-renderOptions :
-    { cardInStackVerticalOffset : Int
-    , playStackXOffset : Int
-    , playStackLeftOffset : Int
-    , playStackTopOffset : Int
-    , cardHeight : Float
-    , cardWidth : Float
-    }
-renderOptions =
-    { cardInStackVerticalOffset = 20
-    , playStackXOffset = 25
-    , playStackLeftOffset = 25
-    , playStackTopOffset = 50
-    , cardHeight = cardHeight
-    , cardWidth = cardAspectRatio * cardHeight
-    }
+-- 10 cards evenly spread out over 10 slots
 
 
 renderCardStack : List Card -> Location -> StackIndex -> StackType -> Svg Msg
@@ -152,8 +130,7 @@ renderCard card stackLocation location =
     Svg.image
         [ x (String.fromInt location.x)
         , y (String.fromInt location.y)
-
-        --, width "50"
+        , width (String.fromFloat renderOptions.cardWidth)
         , height (String.fromFloat renderOptions.cardHeight)
         , xlinkHref (cardImgUrl card)
         , onClick (ClickedCard stackLocation card)
