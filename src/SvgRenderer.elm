@@ -93,9 +93,38 @@ renderPlaySlot : Int -> List Card -> Svg Msg
 renderPlaySlot slotIndex cards =
     let
         location =
-            { x = 25 + slotIndex * 75, y = 50 }
+            { x = renderOptions.playStackLeftOffset + slotIndex * (round renderOptions.cardWidth + renderOptions.playStackXOffset)
+            , y = renderOptions.playStackTopOffset
+            }
     in
     renderCardStack cards location (StackIndex slotIndex) PlayStack
+
+
+cardHeight =
+    200
+
+
+cardAspectRatio : Float
+cardAspectRatio =
+    224 / 313
+
+
+renderOptions :
+    { cardInStackVerticalOffset : Int
+    , playStackXOffset : Int
+    , playStackLeftOffset : Int
+    , playStackTopOffset : Int
+    , cardHeight : Float
+    , cardWidth : Float
+    }
+renderOptions =
+    { cardInStackVerticalOffset = 20
+    , playStackXOffset = 25
+    , playStackLeftOffset = 25
+    , playStackTopOffset = 50
+    , cardHeight = cardHeight
+    , cardWidth = cardAspectRatio * cardHeight
+    }
 
 
 renderCardStack : List Card -> Location -> StackIndex -> StackType -> Svg Msg
@@ -105,7 +134,7 @@ renderCardStack cards stackBasePosition stackindex stacktype =
             (\i card ->
                 let
                     position =
-                        { stackBasePosition | y = stackBasePosition.y + i * 20 }
+                        { stackBasePosition | y = stackBasePosition.y + i * renderOptions.cardInStackVerticalOffset }
 
                     stackLocation =
                         { stackType = stacktype
@@ -125,7 +154,7 @@ renderCard card stackLocation location =
         , y (String.fromInt location.y)
 
         --, width "50"
-        , height "100"
+        , height (String.fromFloat renderOptions.cardHeight)
         , xlinkHref (cardImgUrl card)
         , onClick (ClickedCard stackLocation card)
         ]
