@@ -176,7 +176,7 @@ handleCardClick game stackLocation newCard =
         evaluatedMove =
             case game.selectedCard of
                 Just ( previousSelectedCard, previousSelectedStackLocation ) ->
-                    if isValidMove previousSelectedCard newCard then
+                    if isValidMove game previousSelectedStackLocation stackLocation then
                         Just { fromStackLocation = previousSelectedStackLocation, fromCard = previousSelectedCard, toStackLocation = stackLocation, toCard = newCard }
 
                     else
@@ -201,7 +201,7 @@ handleCardClick game stackLocation newCard =
             { game
                 | clickedCard = Just ( newCard, stackLocation )
                 , selectedCard =
-                    if canSelectCard stackLocation newCard then
+                    if canSelectCard game stackLocation newCard then
                         Just ( newCard, stackLocation )
 
                     else
@@ -272,14 +272,98 @@ type alias Move =
     }
 
 
-isValidMove : Card -> Card -> Bool
-isValidMove from to =
-    cardRank from + 1 == cardRank to
+isValidMove : Game -> StackLocation -> StackLocation -> Bool
+isValidMove game from to =
+    let
+        isValidRank : Card -> Card -> Bool
+        isValidRank fromCard toCard =
+            cardRank fromCard + 1 == cardRank toCard
+
+        isValidFromLocation : Bool
+        isValidFromLocation =
+            True
+
+        isValidToLocation : Bool
+        isValidToLocation =
+            True
+
+        validRank =
+            case ( getCardAt game from, getCardAt game to ) of
+                ( Just fromCard, Just toCard ) ->
+                    isValidRank fromCard toCard
+
+                _ ->
+                    False
+    in
+    isValidFromLocation && isValidToLocation && validRank
 
 
-canSelectCard : StackLocation -> Card -> Bool
-canSelectCard stackLocation card =
-    card.isFacedUp
+getCardAt : Game -> StackLocation -> Maybe Card
+getCardAt game stackLocation =
+    let
+        (StackIndex stackIndex) =
+            stackLocation.stackIndex
+
+        (CardIndex cardIndex) =
+            stackLocation.cardIndex
+    in
+    game.gameSlots
+        |> List.Extra.getAt stackIndex
+        |> Maybe.andThen (List.Extra.getAt cardIndex)
+
+
+canSelectCard : Game -> StackLocation -> Card -> Bool
+canSelectCard game stackLocation card =
+    let
+        (StackIndex stackIndex) =
+            stackLocation.stackIndex
+
+        (CardIndex cardIndex) =
+            stackLocation.cardIndex
+
+        fromStack =
+            List.Extra.getAt stackIndex game.gameSlots
+                |> Maybe.withDefault []
+
+        ( _, potentialSelection ) =
+            List.Extra.splitAt cardIndex fromStack
+
+        facedUpCount =
+            potentialSelection
+                |> List.filter .isFacedUp
+                |> List.length
+
+        allFacedUp =
+            facedUpCount == List.length potentialSelection
+
+        isValidRankStep : Card -> Card -> Bool
+        isValidRankStep card1 card2 =
+            card1.suit == card2.suit && cardRank card1 == cardRank card2 + 1
+
+        isValidChain : List Card -> Bool
+        isValidChain cards =
+            let
+                helper : List Card -> Card -> Bool
+                helper rest current =
+                    case rest of
+                        [] ->
+                            True
+
+                        head :: newRest ->
+                            if isValidRankStep current head then
+                                helper newRest head
+
+                            else
+                                False
+            in
+            case cards of
+                [] ->
+                    False
+
+                h :: tail ->
+                    helper tail h
+    in
+    allFacedUp && isValidChain potentialSelection
 
 
 

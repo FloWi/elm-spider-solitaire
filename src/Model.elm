@@ -140,9 +140,6 @@ rankString rank =
 cardRank : Card -> Int
 cardRank card =
     case card.rank of
-        Ace ->
-            14
-
         King ->
             13
 
@@ -178,6 +175,9 @@ cardRank card =
 
         R2 ->
             2
+
+        Ace ->
+            1
 
 
 type alias Location =
