@@ -1,10 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, button, div, fieldset, h1, input, label, p, text)
+import Html exposing (Html, button, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput)
-import HtmlRenderer exposing (renderAllCardsAsImages, renderHtml)
 import List.Extra
 import Messages exposing (..)
 import Model exposing (..)
@@ -104,6 +103,7 @@ initializeGame shuffledCards seedValue =
             , seedValue = seedValue
             , seedValueTextboxEntry = seedValue
             , clickedCard = Nothing
+            , selectedCard = Nothing
             }
 
         _ ->
@@ -115,6 +115,7 @@ initializeGame shuffledCards seedValue =
             , seedValue = seedValue
             , seedValueTextboxEntry = seedValue
             , clickedCard = Nothing
+            , selectedCard = Nothing
             }
 
 
@@ -152,7 +153,79 @@ update msg model =
         ClickedCard stackLocation card ->
             case model of
                 RunningGame game ->
-                    ( RunningGame { game | clickedCard = Just ( card, stackLocation ) }, Cmd.none )
+                    ( RunningGame
+                        (handleCardClick game stackLocation card)
+                    , Cmd.none
+                    )
+
+        ClickedOnGameBoard ->
+            case model of
+                RunningGame game ->
+                    ( RunningGame
+                        { game
+                            | clickedCard = Nothing
+                            , selectedCard = Nothing
+                        }
+                    , Cmd.none
+                    )
+
+
+handleCardClick : Game -> StackLocation -> Card -> Game
+handleCardClick game stackLocation newCard =
+    let
+        evaluatedMove =
+            case game.selectedCard of
+                Just ( previousSelectedCard, previousSelectedStackLocation ) ->
+                    if isValidMove previousSelectedCard newCard then
+                        Just { from = previousSelectedStackLocation, fromCard = previousSelectedCard, to = stackLocation, toCard = newCard }
+
+                    else
+                        Nothing
+
+                Nothing ->
+                    Nothing
+    in
+    case evaluatedMove of
+        Just move ->
+            moveCard game move
+
+        Nothing ->
+            { game
+                | clickedCard = Just ( newCard, stackLocation )
+                , selectedCard =
+                    if canSelectCard stackLocation newCard then
+                        Just ( newCard, stackLocation )
+
+                    else
+                        Nothing
+            }
+
+
+moveCard : Game -> Move -> Game
+moveCard game move =
+    let
+        _ =
+            Debug.log "movingCard" move
+    in
+    game
+
+
+type alias Move =
+    { from : StackLocation
+    , fromCard : Card
+    , to : StackLocation
+    , toCard : Card
+    }
+
+
+isValidMove : Card -> Card -> Bool
+isValidMove from to =
+    cardRank from + 1 == cardRank to
+
+
+canSelectCard : StackLocation -> Card -> Bool
+canSelectCard stackLocation card =
+    card.isFacedUp
 
 
 

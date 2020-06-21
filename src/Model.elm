@@ -42,6 +42,7 @@ type alias Game =
     , seedValue : Int
     , seedValueTextboxEntry : Int
     , clickedCard : Maybe ( Card, StackLocation )
+    , selectedCard : Maybe ( Card, StackLocation )
     }
 
 
@@ -136,6 +137,49 @@ rankString rank =
             "2"
 
 
+cardRank : Card -> Int
+cardRank card =
+    case card.rank of
+        Ace ->
+            14
+
+        King ->
+            13
+
+        Queen ->
+            12
+
+        Jack ->
+            11
+
+        R10 ->
+            10
+
+        R9 ->
+            9
+
+        R8 ->
+            8
+
+        R7 ->
+            7
+
+        R6 ->
+            6
+
+        R5 ->
+            5
+
+        R4 ->
+            4
+
+        R3 ->
+            3
+
+        R2 ->
+            2
+
+
 type alias Location =
     { x : Int
     , y : Int
@@ -211,14 +255,18 @@ calcDeck =
 
 cardString : Card -> String
 cardString card =
-    rankString card.rank ++ suitString card.suit
+    suitString card.suit ++ rankString card.rank
 
 
 cardFileName : Card -> String
 cardFileName card =
+    let
+        cardFilenameString =
+            rankString card.rank ++ suitString card.suit
+    in
     case card.isFacedUp of
         True ->
-            cardString card ++ ".svg"
+            cardFilenameString ++ ".svg"
 
         False ->
             "RED_BACK.svg"

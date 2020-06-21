@@ -10,3 +10,4 @@ type Msg
     | NewGameWithRandomSeed
     | ChangeSeedValueEntry String
     | ClickedCard StackLocation Card
+    | ClickedOnGameBoard

@@ -28,11 +28,14 @@ renderGameBoard model =
                 ]
                 ([ div [ Html.Attributes.class "gameScreen" ]
                     [ svg
-                        [ class "svgGameTable"
+                        [ class "svgGame"
                         , preserveAspectRatio "xMinYMin meet"
-                        , viewBox "0 0 1000 1000"
+                        , viewBox "0 0 1600 1024"
                         ]
-                        [ renderPlaySlots game.gameSlots
+                        [ Svg.g []
+                            [ renderGameTable game
+                            , renderPlaySlots game.gameSlots (Maybe.map Tuple.second game.selectedCard)
+                            ]
                         ]
                     ]
                  ]
@@ -40,36 +43,57 @@ renderGameBoard model =
                 )
 
 
+renderGameTable : Game -> Svg Msg
+renderGameTable game =
+    Svg.rect
+        [ x "0"
+        , y "0"
+        , width "1600"
+        , height "1024"
+        , rx "15"
+        , ry "15"
+        , class "svgGameTable"
+        , onClick ClickedOnGameBoard
+        ]
+        []
+
+
 renderDebugScreen : Game -> Html Msg
 renderDebugScreen game =
     let
+        cardInfoString card stackLocation =
+            let
+                si =
+                    stackIndexInt stackLocation.stackIndex
+
+                ci =
+                    cardIndexInt stackLocation.cardIndex
+
+                stackTypeStr =
+                    stackTypeString stackLocation.stackType
+            in
+            [ "card: " ++ cardString card
+            , "StackType: " ++ stackTypeStr
+            , "StackIndex: " ++ String.fromInt si
+            , "CardIndex: " ++ String.fromInt ci
+            ]
+                |> String.join "\n"
+
         clickedCardText =
             case game.clickedCard of
                 Just ( card, stackLocation ) ->
-                    let
-                        si =
-                            stackIndexInt stackLocation.stackIndex
+                    [ Html.h5 [] [ Html.text "Clicked Card" ]
+                    , Html.pre [ Html.Attributes.align "left" ] [ Html.text (cardInfoString card stackLocation) ]
+                    ]
 
-                        ci =
-                            cardIndexInt stackLocation.cardIndex
+                Nothing ->
+                    []
 
-                        stackTypeStr =
-                            stackTypeString stackLocation.stackType
-
-                        infoString =
-                            [ "clicked card: " ++ cardString card
-                            , "StackType: " ++ stackTypeStr
-                            , "StackIndex: " ++ String.fromInt si
-                            , "CardIndex: " ++ String.fromInt ci
-                            ]
-                                |> String.join "\n"
-                    in
-                    [ Html.pre
-                        [ Html.Attributes.align "left"
-                        ]
-                        [ Html.text
-                            infoString
-                        ]
+        selectedCardText =
+            case game.selectedCard of
+                Just ( card, stackLocation ) ->
+                    [ Html.h5 [] [ Html.text "Selected Card" ]
+                    , Html.pre [ Html.Attributes.align "left" ] [ Html.text (cardInfoString card stackLocation) ]
                     ]
 
                 Nothing ->
@@ -80,33 +104,34 @@ renderDebugScreen game =
             [ Html.text "DebugScreen" ]
          ]
             ++ clickedCardText
+            ++ selectedCardText
         )
 
 
-renderPlaySlots : List (List Card) -> Svg Msg
-renderPlaySlots cardSlots =
+renderPlaySlots : List (List Card) -> Maybe StackLocation -> Svg Msg
+renderPlaySlots cardSlots selectedCardLocation =
     cardSlots
-        |> List.indexedMap renderPlaySlot
+        |> List.indexedMap (renderPlaySlot selectedCardLocation)
         |> Svg.g []
 
 
-renderPlaySlot : Int -> List Card -> Svg Msg
-renderPlaySlot slotIndex cards =
+renderPlaySlot : Maybe StackLocation -> Int -> List Card -> Svg Msg
+renderPlaySlot selectedCardLocation slotIndex cards =
     let
         location =
             { x = round (renderOptions.playStackXOffset + toFloat slotIndex * (renderOptions.cardWidth + renderOptions.playStackXOffset))
             , y = renderOptions.playStackTopOffset
             }
     in
-    renderCardStack cards location (StackIndex slotIndex) PlayStack
+    renderCardStack selectedCardLocation cards location (StackIndex slotIndex) PlayStack
 
 
 
 -- 10 cards evenly spread out over 10 slots
 
 
-renderCardStack : List Card -> Location -> StackIndex -> StackType -> Svg Msg
-renderCardStack cards stackBasePosition stackindex stacktype =
+renderCardStack : Maybe StackLocation -> List Card -> Location -> StackIndex -> StackType -> Svg Msg
+renderCardStack selectedCardLocation cards stackBasePosition stackindex stacktype =
     cards
         |> List.indexedMap
             (\i card ->
@@ -120,68 +145,38 @@ renderCardStack cards stackBasePosition stackindex stacktype =
                         , cardIndex = CardIndex i
                         }
                 in
-                renderCard card stackLocation position
+                renderCard card selectedCardLocation stackLocation position
             )
         |> Svg.g []
 
 
-renderCard : Card -> StackLocation -> Location -> Svg Msg
-renderCard card stackLocation location =
-    Svg.image
-        [ x (String.fromInt location.x)
-        , y (String.fromInt location.y)
-        , width (String.fromFloat renderOptions.cardWidth)
-        , height (String.fromFloat renderOptions.cardHeight)
-        , xlinkHref (cardImgUrl card)
-        , onClick (ClickedCard stackLocation card)
-        ]
-        []
+renderCard : Card -> Maybe StackLocation -> StackLocation -> Location -> Svg Msg
+renderCard card selectedCardLocation stackLocation location =
+    let
+        isSelectedCard =
+            case selectedCardLocation of
+                Just a ->
+                    a == stackLocation
 
+                Nothing ->
+                    False
 
+        cardImage =
+            Svg.image
+                [ x (String.fromInt location.x)
+                , y (String.fromInt location.y)
+                , width (String.fromFloat renderOptions.cardWidth)
+                , height (String.fromFloat renderOptions.cardHeight)
+                , xlinkHref (cardImgUrl card)
+                , onClick (ClickedCard stackLocation card)
+                , class
+                    (if isSelectedCard then
+                        "isSelected"
 
---renderCard : Card -> Html msg
---renderCard card =
---    let
---        rank =
---            rankString card.rank
---
---        suit =
---            suitString card.suit
---
---        hidden : List (Html.Attribute msg)
---        hidden =
---            if card.isFacedUp then
---                []
---
---            else
---                [ Html.Attributes.class "hiddenCard" ]
---    in
---    p hidden [ text (suit ++ rank) ]
---renderGameSlots : String -> List (List Card) -> Html msg
---renderGameSlots label gameSlots =
---    let
---        renderGameSlot : List Card -> Html msg
---        renderGameSlot cards =
---            cards
---                |> List.map (\card -> p [] [ renderCard card ])
---                |> div []
---
---        gameSlotDivs : List (Html msg)
---        gameSlotDivs =
---            gameSlots
---                |> List.indexedMap Tuple.pair
---                |> List.map
---                    (\( i, cards ) ->
---                        div
---                            []
---                            [ text ("stack " ++ String.fromInt i)
---                            , renderGameSlot cards
---                            ]
---                    )
---    in
---    div []
---        [ h2 [] [ text label ]
---        , div
---            [ Html.Attributes.class "gameStacks" ]
---            gameSlotDivs
---        ]
+                     else
+                        "notSelected"
+                    )
+                ]
+                []
+    in
+    cardImage

@@ -97,7 +97,7 @@ img {
 
 .gameScreen {
   grid-area: gameScreen;
-  background-color: #325032;
+  /*background-color: #325032;*/
 }
 
 .gameScreen h1 {
@@ -109,10 +109,20 @@ img {
   background-color: #e3e3e3;
 }
 
-.svgGameTable {
-  background-color: #329032;
-  border: 1px solid #cccccc;
+.svgGame {
   height: 85vh;
   width: 80vw;
+}
+
+.svgGameTable {
+  fill: #329032;
+  border: 1px solid #cccccc;
+}
+
+.isSelected {
+  outline: 3px solid yellow;
+}
+
+.notSelected {
 
 }
