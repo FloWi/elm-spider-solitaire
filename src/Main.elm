@@ -279,6 +279,15 @@ isValidMove game from to =
         isValidRank fromCard toCard =
             cardRank fromCard + 1 == cardRank toCard
 
+        (StackIndex fromStackIndex) =
+            from.stackIndex
+
+        (StackIndex toStackIndex) =
+            to.stackIndex
+
+        validStackMove =
+            fromStackIndex /= toStackIndex
+
         isValidFromLocation : Bool
         isValidFromLocation =
             True
@@ -295,7 +304,7 @@ isValidMove game from to =
                 _ ->
                     False
     in
-    isValidFromLocation && isValidToLocation && validRank
+    validStackMove && isValidFromLocation && isValidToLocation && validRank
 
 
 getCardAt : Game -> StackLocation -> Maybe Card
