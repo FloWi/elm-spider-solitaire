@@ -177,7 +177,7 @@ handleCardClick game stackLocation newCard =
             case game.selectedCard of
                 Just ( previousSelectedCard, previousSelectedStackLocation ) ->
                     if isValidMove previousSelectedCard newCard then
-                        Just { from = previousSelectedStackLocation, fromCard = previousSelectedCard, to = stackLocation, toCard = newCard }
+                        Just { fromStackLocation = previousSelectedStackLocation, fromCard = previousSelectedCard, toStackLocation = stackLocation, toCard = newCard }
 
                     else
                         Nothing
@@ -187,7 +187,15 @@ handleCardClick game stackLocation newCard =
     in
     case evaluatedMove of
         Just move ->
-            moveCard game move
+            let
+                newGame =
+                    moveCard game move
+                        |> faceUpTopmostCards
+            in
+            { newGame
+                | clickedCard = Nothing
+                , selectedCard = Nothing
+            }
 
         Nothing ->
             { game
@@ -201,19 +209,65 @@ handleCardClick game stackLocation newCard =
             }
 
 
-moveCard : Game -> Move -> Game
-moveCard game move =
+faceUpTopmostCards : Game -> Game
+faceUpTopmostCards game =
     let
-        _ =
-            Debug.log "movingCard" move
+        faceupTopmostOfStack : List Card -> List Card
+        faceupTopmostOfStack cards =
+            case List.Extra.unconsLast cards of
+                Just ( last, others ) ->
+                    others ++ [ { last | isFacedUp = True } ]
+
+                Nothing ->
+                    []
     in
-    game
+    { game | gameSlots = List.map faceupTopmostOfStack game.gameSlots }
+
+
+moveCard : Game -> Move -> Game
+moveCard game { fromStackLocation, fromCard, toStackLocation, toCard } =
+    {-
+       logic:
+       - take the cards from the fromStack
+       - update the fromStack and remove the dragged cards
+       - put the cards on top of the toStack
+    -}
+    let
+        (StackIndex fromStackIndex) =
+            fromStackLocation.stackIndex
+
+        (CardIndex fromCardIndex) =
+            fromStackLocation.cardIndex
+
+        fromStack =
+            List.Extra.getAt fromStackIndex game.gameSlots
+                |> Maybe.withDefault []
+
+        (StackIndex toStackIndex) =
+            toStackLocation.stackIndex
+
+        toStack =
+            List.Extra.getAt toStackIndex game.gameSlots
+                |> Maybe.withDefault []
+
+        ( newFromStack, draggedCards ) =
+            List.Extra.splitAt fromCardIndex fromStack
+
+        newToStack =
+            toStack ++ draggedCards
+
+        newGameSlots =
+            game.gameSlots
+                |> List.Extra.updateAt fromStackIndex (\_ -> newFromStack)
+                |> List.Extra.updateAt toStackIndex (\_ -> newToStack)
+    in
+    { game | gameSlots = newGameSlots }
 
 
 type alias Move =
-    { from : StackLocation
+    { fromStackLocation : StackLocation
     , fromCard : Card
-    , to : StackLocation
+    , toStackLocation : StackLocation
     , toCard : Card
     }
 
