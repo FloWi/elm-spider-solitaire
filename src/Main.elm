@@ -474,6 +474,15 @@ checkbox msg name isChecked =
         ]
 
 
+prefetchLink : String -> Html Msg
+prefetchLink url =
+    Html.node "link"
+        [ Html.Attributes.rel "prefetch"
+        , Html.Attributes.href url
+        ]
+        []
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -481,11 +490,26 @@ view model =
             case model of
                 RunningGame game ->
                     ( game.isDebug, game.seedValue, game.seedValueTextboxEntry )
+
+        allCards =
+            calcDeck
+
+        hiddenCard =
+            allCards |> List.head |> Maybe.map (\c -> [ c ]) |> Maybe.withDefault []
+
+        prefetchCardImageLinks =
+            allCards
+                |> List.map (\card -> { card | isFacedUp = True })
+                |> List.append hiddenCard
+                |> List.map cardImgUrl
+                |> List.map prefetchLink
+                |> div []
     in
     div
         [ Html.Attributes.class "gameView"
         ]
-        [ div [ Html.Attributes.class "header" ]
+        [ prefetchCardImageLinks
+        , div [ Html.Attributes.class "header" ]
             [ h1 [] [ text "Elm Spider Solitaire" ]
             ]
         , renderGameBoard
