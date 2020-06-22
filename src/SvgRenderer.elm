@@ -122,8 +122,24 @@ renderPlaySlot selectedCardLocation slotIndex cards =
             { x = round (renderOptions.playStackXOffset + toFloat slotIndex * (renderOptions.cardWidth + renderOptions.playStackXOffset))
             , y = renderOptions.playStackTopOffset
             }
+
+        emptyStackIndicator =
+            Svg.rect
+                [ x (String.fromInt location.x)
+                , y (String.fromInt location.y)
+                , width (String.fromInt (round renderOptions.cardWidth))
+                , height (String.fromInt (round renderOptions.cardHeight))
+                , rx "5"
+                , ry "5"
+                , class "emptyPlaySlot"
+                , onClick (ClickedOnEmptyPlaySlot PlayStack (StackIndex slotIndex))
+                ]
+                []
+
+        cardStack =
+            renderCardStack selectedCardLocation cards location (StackIndex slotIndex) PlayStack
     in
-    renderCardStack selectedCardLocation cards location (StackIndex slotIndex) PlayStack
+    Svg.g [] [ emptyStackIndicator, cardStack ]
 
 
 

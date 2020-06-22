@@ -123,6 +123,11 @@ img {
   outline: 3px solid yellow;
 }
 
+.emptyPlaySlot {
+  fill: #29c729
+}
+
+
 .notSelected {
 
 }

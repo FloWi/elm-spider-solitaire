@@ -11,3 +11,4 @@ type Msg
     | ChangeSeedValueEntry String
     | ClickedCard StackLocation Card
     | ClickedOnGameBoard
+    | ClickedOnEmptyPlaySlot StackType StackIndex
