@@ -46,10 +46,6 @@ type alias Game =
     }
 
 
-type CardStack
-    = List Card
-
-
 type Move
     = DrawNewCards
 

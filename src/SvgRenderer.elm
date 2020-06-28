@@ -26,7 +26,7 @@ renderGameBoard model =
             div
                 [ Html.Attributes.class containerClass
                 ]
-                ([ div [ Html.Attributes.class "gameScreen" ]
+                (div [ Html.Attributes.class "gameScreen" ]
                     [ svg
                         [ class "svgGame"
                         , preserveAspectRatio "xMinYMin meet"
@@ -38,8 +38,7 @@ renderGameBoard model =
                             ]
                         ]
                     ]
-                 ]
-                    ++ debugScreenDiv
+                    :: debugScreenDiv
                 )
 
 

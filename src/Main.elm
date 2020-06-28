@@ -5,6 +5,7 @@ import Html exposing (Html, button, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, placeholder, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
+import Maybe.Extra
 import Messages exposing (..)
 import Model exposing (..)
 import Random exposing (..)
@@ -40,7 +41,7 @@ createGameBySeed seedValue =
         cardsGenerator =
             Random.List.shuffle calcGameCards
 
-        ( cards, seed_ ) =
+        ( cards, _ ) =
             Random.step cardsGenerator seed
 
         game =
@@ -181,31 +182,19 @@ update msg model =
 handleClickOnEmptySlot : Game -> StackType -> StackIndex -> Game
 handleClickOnEmptySlot game stackType stackIndex =
     let
-        evaluatedMove =
-            case game.selectedCard of
-                Just ( previousSelectedCard, previousSelectedStackLocation ) ->
-                    Just (MoveToEmptyStack { fromStackLocation = previousSelectedStackLocation, fromCard = previousSelectedCard, toStackIndex = stackIndex, toStackType = stackType })
-
-                Nothing ->
-                    Nothing
+        newGameState =
+            game.selectedCard
+                |> Maybe.map
+                    (\( previousSelectedCard, previousSelectedStackLocation ) ->
+                        moveCard game (MoveToEmptyStack { fromStackLocation = previousSelectedStackLocation, fromCard = previousSelectedCard, toStackIndex = stackIndex, toStackType = stackType })
+                            |> faceUpTopmostCards
+                    )
+                |> Maybe.withDefault game
     in
-    case evaluatedMove of
-        Just move ->
-            let
-                newGame =
-                    moveCard game move
-                        |> faceUpTopmostCards
-            in
-            { newGame
-                | clickedCard = Nothing
-                , selectedCard = Nothing
-            }
-
-        Nothing ->
-            { game
-                | clickedCard = Nothing
-                , selectedCard = Nothing
-            }
+    { newGameState
+        | clickedCard = Nothing
+        , selectedCard = Nothing
+    }
 
 
 handleCardClick : Game -> StackLocation -> Game
@@ -268,7 +257,7 @@ faceUpTopmostCards game =
 
 
 moveToStack : Game -> StackLocation -> Card -> StackIndex -> StackType -> Game
-moveToStack game fromStackLocation fromCard toStackIndex toStackType =
+moveToStack game fromStackLocation _ toStackIndex _ =
     let
         (StackIndex fromStackIndex) =
             fromStackLocation.stackIndex
