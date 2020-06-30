@@ -38,7 +38,7 @@ renderOptions :
     , gameHeight : Int
     }
 renderOptions =
-    { cardInStackVerticalOffset = 20
+    { cardInStackVerticalOffset = 30
     , playStackXOffset = playStackXOffset
     , playStackTopOffset = playStackXOffset
     , cardHeight = cardHeight
