@@ -12,3 +12,4 @@ type Msg
     | ClickedCard StackLocation Card
     | ClickedOnGameBoard
     | ClickedOnEmptyPlaySlot StackType StackIndex
+    | DrawNewCard

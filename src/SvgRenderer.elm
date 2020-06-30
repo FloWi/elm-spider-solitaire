@@ -2,6 +2,7 @@ module SvgRenderer exposing (..)
 
 import Html exposing (Html, div)
 import Html.Attributes
+import Maybe.Extra
 import Messages exposing (..)
 import Model exposing (..)
 import Svg exposing (Svg, svg)
@@ -10,6 +11,7 @@ import Svg.Events exposing (onClick)
 import SvgRenderOptions exposing (renderOptions)
 
 
+renderGameBoard : Model -> Svg Msg
 renderGameBoard model =
     case model of
         RunningGame game ->
@@ -22,6 +24,11 @@ renderGameBoard model =
 
                     else
                         ( "content", [] )
+
+                viewBoxString =
+                    [ 0, 0, renderOptions.gameWidth, renderOptions.gameHeight ]
+                        |> List.map String.fromInt
+                        |> String.join " "
             in
             div
                 [ Html.Attributes.class containerClass
@@ -30,11 +37,12 @@ renderGameBoard model =
                     [ svg
                         [ class "svgGame"
                         , preserveAspectRatio "xMinYMin meet"
-                        , viewBox "0 0 1600 1024"
+                        , viewBox viewBoxString
                         ]
                         [ Svg.g []
                             [ renderGameTable game
                             , renderPlaySlots game.gameSlots (Maybe.map Tuple.second game.selectedCard)
+                            , renderDrawNewCardSlots game.drawCardSlots
                             ]
                         ]
                     ]
@@ -47,8 +55,8 @@ renderGameTable game =
     Svg.rect
         [ x "0"
         , y "0"
-        , width "1600"
-        , height "1024"
+        , width (String.fromInt renderOptions.gameWidth)
+        , height (String.fromInt renderOptions.gameHeight)
         , rx "15"
         , ry "15"
         , class "svgGameTable"
@@ -79,31 +87,32 @@ renderDebugScreen game =
                 |> String.join "\n"
 
         clickedCardText =
-            case game.clickedCard of
-                Just ( card, stackLocation ) ->
-                    [ Html.h5 [] [ Html.text "Clicked Card" ]
-                    , Html.pre [ Html.Attributes.align "left" ] [ Html.text (cardInfoString card stackLocation) ]
-                    ]
-
-                Nothing ->
-                    []
+            game.clickedCard
+                |> Maybe.map
+                    (\( card, stackLocation ) ->
+                        [ Html.h5 [] [ Html.text "Clicked Card" ]
+                        , Html.pre [ Html.Attributes.align "left" ] [ Html.text (cardInfoString card stackLocation) ]
+                        ]
+                    )
 
         selectedCardText =
-            case game.selectedCard of
-                Just ( card, stackLocation ) ->
-                    [ Html.h5 [] [ Html.text "Selected Card" ]
-                    , Html.pre [ Html.Attributes.align "left" ] [ Html.text (cardInfoString card stackLocation) ]
-                    ]
-
-                Nothing ->
-                    []
+            game.selectedCard
+                |> Maybe.map
+                    (\( card, stackLocation ) ->
+                        [ Html.h5 [] [ Html.text "Selected Card" ]
+                        , Html.pre [ Html.Attributes.align "left" ] [ Html.text (cardInfoString card stackLocation) ]
+                        ]
+                    )
     in
     div [ Html.Attributes.class "debugScreen" ]
-        ([ Html.h2 []
+        (Html.h2 []
             [ Html.text "DebugScreen" ]
-         ]
-            ++ clickedCardText
-            ++ selectedCardText
+            :: List.concat
+                (Maybe.Extra.values
+                    [ clickedCardText
+                    , selectedCardText
+                    ]
+                )
         )
 
 
@@ -119,7 +128,7 @@ renderPlaySlot selectedCardLocation slotIndex cards =
     let
         location =
             { x = round (renderOptions.playStackXOffset + toFloat slotIndex * (renderOptions.cardWidth + renderOptions.playStackXOffset))
-            , y = renderOptions.playStackTopOffset
+            , y = round renderOptions.playStackTopOffset
             }
 
         emptyStackIndicator =
@@ -195,3 +204,42 @@ renderCard card selectedCardLocation stackLocation location =
                 []
     in
     cardImage
+
+
+renderDrawNewCardSlots : List (List Card) -> Svg Msg
+renderDrawNewCardSlots drawNewCardSlots =
+    let
+        locationByIndex slotIndex _ =
+            { x = round renderOptions.drawNewCardXOffset
+            , y = round (renderOptions.drawNewCardYOffset - toFloat (slotIndex * renderOptions.cardInStackVerticalOffset))
+            }
+
+        topCardOfEachSlot =
+            drawNewCardSlots
+                |> List.map List.head
+                |> Maybe.Extra.values
+    in
+    topCardOfEachSlot
+        |> List.indexedMap
+            (\i card ->
+                let
+                    location =
+                        locationByIndex i card
+                in
+                Svg.image
+                    ([ x (String.fromInt location.x)
+                     , y (String.fromInt location.y)
+                     , width (String.fromInt (round renderOptions.cardWidth))
+                     , height (String.fromInt (round renderOptions.cardHeight))
+                     , xlinkHref (cardImgUrl card)
+                     ]
+                        ++ (if i == List.length drawNewCardSlots - 1 then
+                                [ onClick DrawNewCard ]
+
+                            else
+                                []
+                           )
+                    )
+                    []
+            )
+        |> Svg.g []

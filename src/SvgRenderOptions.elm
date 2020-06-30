@@ -1,6 +1,14 @@
 module SvgRenderOptions exposing (renderOptions)
 
 
+gameWidth =
+    1600
+
+
+gameHeight =
+    1024
+
+
 playStackXOffset =
     25
 
@@ -21,9 +29,13 @@ cardAspectRatio =
 renderOptions :
     { cardInStackVerticalOffset : Int
     , playStackXOffset : Float
-    , playStackTopOffset : Int
+    , playStackTopOffset : Float
     , cardHeight : Float
     , cardWidth : Float
+    , drawNewCardXOffset : Float
+    , drawNewCardYOffset : Float
+    , gameWidth : Int
+    , gameHeight : Int
     }
 renderOptions =
     { cardInStackVerticalOffset = 20
@@ -31,4 +43,8 @@ renderOptions =
     , playStackTopOffset = playStackXOffset
     , cardHeight = cardHeight
     , cardWidth = cardWidth
+    , drawNewCardXOffset = gameWidth - cardWidth - playStackXOffset
+    , drawNewCardYOffset = gameHeight - cardHeight - playStackXOffset
+    , gameWidth = gameWidth
+    , gameHeight = gameHeight
     }

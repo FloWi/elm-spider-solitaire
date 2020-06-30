@@ -50,13 +50,10 @@ createGameBySeed seedValue =
     RunningGame game
 
 
-
---generate : (a → msg) → Generator a → Cmd msg
---generate tagger generator defined in Random
---foldl : (a → b → b) → b → List a → b
---foldl func acc list defined in List
-
-
+{-| divides a list into n chunks based on the chunksizes list.
+Returns an empty List when the numbers don't add up (for now). FIXME: return Maybe (List (List a))
+chunklist [2,3] (List.repeat 5 42) == [[42, 42], [42, 42, 42]]
+-}
 chunkList : List a -> List Int -> List (List a)
 chunkList items chunkSizes =
     let
@@ -177,6 +174,36 @@ update msg model =
                         (handleClickOnEmptySlot game stackIndex stackType)
                     , Cmd.none
                     )
+
+        DrawNewCard ->
+            case model of
+                RunningGame game ->
+                    ( RunningGame
+                        (drawNewCards game)
+                    , Cmd.none
+                    )
+
+
+drawNewCards : Game -> Game
+drawNewCards game =
+    let
+        ( drawedCards, restDrawCards ) =
+            case game.drawCardSlots of
+                head :: tail ->
+                    ( head, tail )
+
+                [] ->
+                    ( [], [] )
+
+        newGameSlots =
+            List.Extra.zip game.gameSlots drawedCards
+                |> List.map (\( gameSlotCards, drawedCard ) -> List.append gameSlotCards [ drawedCard ])
+    in
+    { game
+        | drawCardSlots = restDrawCards
+        , gameSlots = newGameSlots
+    }
+        |> faceUpTopmostCards
 
 
 handleClickOnEmptySlot : Game -> StackType -> StackIndex -> Game
