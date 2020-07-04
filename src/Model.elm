@@ -2,6 +2,8 @@ module Model exposing (..)
 
 ---- MODEL ----
 
+import Animation
+
 
 type Suit
     = Clubs
@@ -43,6 +45,7 @@ type alias Game =
     , seedValueTextboxEntry : Int
     , clickedCard : Maybe ( Card, StackLocation )
     , selectedCard : Maybe ( Card, StackLocation )
+    , style : Animation.State
     }
 
 

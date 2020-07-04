@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Animation exposing (Angle)
 import Browser
 import Html exposing (Html, button, div, fieldset, h1, input, label, text)
 import Html.Attributes exposing (checked, placeholder, style, type_, value)
@@ -102,6 +103,7 @@ initializeGame shuffledCards seedValue =
             , seedValueTextboxEntry = seedValue
             , clickedCard = Nothing
             , selectedCard = Nothing
+            , style = Animation.style []
             }
 
         _ ->
@@ -114,6 +116,7 @@ initializeGame shuffledCards seedValue =
             , seedValueTextboxEntry = seedValue
             , clickedCard = Nothing
             , selectedCard = Nothing
+            , style = Animation.style []
             }
 
 
@@ -183,6 +186,16 @@ update msg model =
                     , Cmd.none
                     )
 
+        Animate animMsg ->
+            case model of
+                RunningGame game ->
+                    ( RunningGame
+                        { game
+                            | style = Animation.update animMsg game.style
+                        }
+                    , Cmd.none
+                    )
+
 
 drawNewCards : Game -> Game
 drawNewCards game =
@@ -223,6 +236,14 @@ handleClickOnEmptySlot game stackType stackIndex =
     }
 
 
+cardClickedAnimation =
+    [ Animation.to
+        [ Animation.rotate (Animation.turn 1) ]
+    , Animation.set
+        [ Animation.rotate (Animation.turn 0) ]
+    ]
+
+
 handleCardClick : Game -> StackLocation -> Game
 handleCardClick game stackLocation =
     case getCardAt game stackLocation of
@@ -255,15 +276,23 @@ handleCardClick game stackLocation =
                     }
 
                 Nothing ->
-                    { game
-                        | clickedCard = Just ( newCard, stackLocation )
-                        , selectedCard =
-                            if canSelectCard game stackLocation newCard then
-                                Just ( newCard, stackLocation )
+                    let
+                        updatedGame =
+                            { game
+                                | clickedCard = Just ( newCard, stackLocation )
+                                , selectedCard =
+                                    if canSelectCard game stackLocation newCard then
+                                        Just ( newCard, stackLocation )
 
-                            else
-                                Nothing
-                    }
+                                    else
+                                        Nothing
+                            }
+                    in
+                    if canSelectCard game stackLocation newCard then
+                        { updatedGame | style = Animation.interrupt cardClickedAnimation game.style }
+
+                    else
+                        updatedGame
 
 
 moveToStack : Game -> StackLocation -> Card -> StackIndex -> StackType -> Game
@@ -600,6 +629,13 @@ view model =
         ]
 
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case model of
+        RunningGame game ->
+            Animation.subscription Animate [ game.style ]
+
+
 
 ---- PROGRAM ----
 
@@ -610,5 +646,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }

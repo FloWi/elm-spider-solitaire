@@ -1,5 +1,6 @@
 module Messages exposing (..)
 
+import Animation
 import Model exposing (..)
 
 
@@ -13,3 +14,4 @@ type Msg
     | ClickedOnGameBoard
     | ClickedOnEmptyPlaySlot StackType StackIndex
     | DrawNewCard
+    | Animate Animation.Msg

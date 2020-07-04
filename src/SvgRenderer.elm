@@ -1,5 +1,6 @@
 module SvgRenderer exposing (..)
 
+import Animation exposing (px)
 import Html exposing (Html, div)
 import Html.Attributes
 import Maybe.Extra
@@ -41,7 +42,7 @@ renderGameBoard model =
                         ]
                         [ Svg.g []
                             [ renderGameTable game
-                            , renderPlaySlots game.gameSlots (Maybe.map Tuple.second game.selectedCard)
+                            , renderPlaySlots game game.gameSlots (Maybe.map Tuple.second game.selectedCard)
                             , renderDrawNewCardSlots game.drawCardSlots
                             ]
                         ]
@@ -116,15 +117,15 @@ renderDebugScreen game =
         )
 
 
-renderPlaySlots : List (List Card) -> Maybe StackLocation -> Svg Msg
-renderPlaySlots cardSlots selectedCardLocation =
+renderPlaySlots : Game -> List (List Card) -> Maybe StackLocation -> Svg Msg
+renderPlaySlots game cardSlots selectedCardLocation =
     cardSlots
-        |> List.indexedMap (renderPlaySlot selectedCardLocation)
+        |> List.indexedMap (renderPlaySlot game selectedCardLocation)
         |> Svg.g []
 
 
-renderPlaySlot : Maybe StackLocation -> Int -> List Card -> Svg Msg
-renderPlaySlot selectedCardLocation slotIndex cards =
+renderPlaySlot : Game -> Maybe StackLocation -> Int -> List Card -> Svg Msg
+renderPlaySlot game selectedCardLocation slotIndex cards =
     let
         location =
             { x = round (renderOptions.playStackXOffset + toFloat slotIndex * (renderOptions.cardWidth + renderOptions.playStackXOffset))
@@ -145,7 +146,7 @@ renderPlaySlot selectedCardLocation slotIndex cards =
                 []
 
         cardStack =
-            renderCardStack selectedCardLocation cards location (StackIndex slotIndex) PlayStack
+            renderCardStack game selectedCardLocation cards location (StackIndex slotIndex) PlayStack
     in
     Svg.g [] [ emptyStackIndicator, cardStack ]
 
@@ -154,8 +155,8 @@ renderPlaySlot selectedCardLocation slotIndex cards =
 -- 10 cards evenly spread out over 10 slots
 
 
-renderCardStack : Maybe StackLocation -> List Card -> Location -> StackIndex -> StackType -> Svg Msg
-renderCardStack selectedCardLocation cards stackBasePosition stackindex stacktype =
+renderCardStack : Game -> Maybe StackLocation -> List Card -> Location -> StackIndex -> StackType -> Svg Msg
+renderCardStack game selectedCardLocation cards stackBasePosition stackindex stacktype =
     cards
         |> List.indexedMap
             (\i card ->
@@ -169,13 +170,13 @@ renderCardStack selectedCardLocation cards stackBasePosition stackindex stacktyp
                         , cardIndex = CardIndex i
                         }
                 in
-                renderCard card selectedCardLocation stackLocation position
+                renderCard game card selectedCardLocation stackLocation position
             )
         |> Svg.g []
 
 
-renderCard : Card -> Maybe StackLocation -> StackLocation -> Location -> Svg Msg
-renderCard card selectedCardLocation stackLocation location =
+renderCard : Game -> Card -> Maybe StackLocation -> StackLocation -> Location -> Svg Msg
+renderCard game card selectedCardLocation stackLocation location =
     let
         isSelectedCard =
             case selectedCardLocation of
@@ -186,22 +187,48 @@ renderCard card selectedCardLocation stackLocation location =
                     False
 
         cardImage =
-            Svg.image
+            let
+                renderAttributes =
+                    if isSelectedCard then
+                        Animation.render game.style
+
+                    else
+                        []
+
+                originX =
+                    renderOptions.cardWidth / 2
+
+                originY =
+                    renderOptions.cardHeight / 2
+
+                originString =
+                    [ originX, originY ]
+                        |> List.map (\float -> String.fromFloat float ++ "px")
+                        |> String.join " "
+
+                attributes =
+                    [ width (String.fromFloat renderOptions.cardWidth)
+                    , height (String.fromFloat renderOptions.cardHeight)
+                    , xlinkHref (cardImgUrl card)
+                    , Html.Attributes.attribute "transform-origin" originString
+                    , onClick (ClickedCard stackLocation)
+                    , class
+                        (if isSelectedCard then
+                            "isSelected"
+
+                         else
+                            "notSelected"
+                        )
+                    ]
+            in
+            Svg.svg
                 [ x (String.fromInt location.x)
                 , y (String.fromInt location.y)
-                , width (String.fromFloat renderOptions.cardWidth)
-                , height (String.fromFloat renderOptions.cardHeight)
-                , xlinkHref (cardImgUrl card)
-                , onClick (ClickedCard stackLocation)
-                , class
-                    (if isSelectedCard then
-                        "isSelected"
-
-                     else
-                        "notSelected"
-                    )
                 ]
-                []
+                [ Svg.image
+                    (renderAttributes ++ attributes)
+                    []
+                ]
     in
     cardImage
 
