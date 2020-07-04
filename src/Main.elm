@@ -148,7 +148,7 @@ update msg model =
                         RunningGame game ->
                             ( RunningGame { game | seedValueTextboxEntry = parsed }, Cmd.none )
 
-        ClickedCard stackLocation card ->
+        ClickedCard stackLocation ->
             case model of
                 RunningGame game ->
                     ( RunningGame
@@ -179,7 +179,7 @@ update msg model =
             case model of
                 RunningGame game ->
                     ( RunningGame
-                        (drawNewCards game)
+                        (applyMove game DrawNewCards)
                     , Cmd.none
                     )
 
@@ -213,8 +213,7 @@ handleClickOnEmptySlot game stackType stackIndex =
             game.selectedCard
                 |> Maybe.map
                     (\( previousSelectedCard, previousSelectedStackLocation ) ->
-                        moveCard game (MoveToEmptyStack { fromStackLocation = previousSelectedStackLocation, fromCard = previousSelectedCard, toStackIndex = stackIndex, toStackType = stackType })
-                            |> faceUpTopmostCards
+                        applyMove game (MoveToEmptyStack { fromStackLocation = previousSelectedStackLocation, fromCard = previousSelectedCard, toStackIndex = stackIndex, toStackType = stackType })
                     )
                 |> Maybe.withDefault game
     in
@@ -248,8 +247,7 @@ handleCardClick game stackLocation =
                 Just move ->
                     let
                         newGame =
-                            moveCard game move
-                                |> faceUpTopmostCards
+                            applyMove game move
                     in
                     { newGame
                         | clickedCard = Nothing
@@ -266,21 +264,6 @@ handleCardClick game stackLocation =
                             else
                                 Nothing
                     }
-
-
-faceUpTopmostCards : Game -> Game
-faceUpTopmostCards game =
-    let
-        faceupTopmostOfStack : List Card -> List Card
-        faceupTopmostOfStack cards =
-            case List.Extra.unconsLast cards of
-                Just ( last, others ) ->
-                    others ++ [ { last | isFacedUp = True } ]
-
-                Nothing ->
-                    []
-    in
-    { game | gameSlots = List.map faceupTopmostOfStack game.gameSlots }
 
 
 moveToStack : Game -> StackLocation -> Card -> StackIndex -> StackType -> Game
@@ -317,8 +300,39 @@ moveToStack game fromStackLocation _ toStackIndex _ =
     { game | gameSlots = newGameSlots }
 
 
-moveCard : Game -> Move -> Game
-moveCard game move =
+applyMove : Game -> Move -> Game
+applyMove game move =
+    let
+        helper : Game -> List Move -> List Move -> ( Game, List Move )
+        helper g movesToApply recordedMoves =
+            case movesToApply of
+                [] ->
+                    ( g, recordedMoves )
+
+                m :: restMoves ->
+                    let
+                        newGame =
+                            applySingleMove g m
+
+                        fullStackRemoval =
+                            findCompletedStacks newGame
+
+                        faceUpMoves =
+                            findFaceUpMoves newGame
+
+                        newMovesToApply =
+                            fullStackRemoval ++ faceUpMoves
+                    in
+                    helper newGame (restMoves ++ newMovesToApply) (recordedMoves ++ [ m ])
+
+        ( game2, appliedMoves ) =
+            helper game [ move ] []
+    in
+    { game2 | moves = appliedMoves :: game2.moves }
+
+
+applySingleMove : Game -> Move -> Game
+applySingleMove game move =
     case move of
         Faceup stackLocation ->
             case updateCardAt game stackLocation (\card -> { card | isFacedUp = True }) of
@@ -334,21 +348,62 @@ moveCard game move =
         MoveCard { fromStackLocation, fromCard, toStackLocation, toCard } ->
             moveToStack game fromStackLocation fromCard toStackLocation.stackIndex toStackLocation.stackType
 
+        DrawNewCards ->
+            drawNewCards game
 
-type Move
-    = MoveCard
-        { fromStackLocation : StackLocation
-        , fromCard : Card
-        , toStackLocation : StackLocation
-        , toCard : Card
-        }
-    | MoveToEmptyStack
-        { fromStackLocation : StackLocation
-        , fromCard : Card
-        , toStackIndex : StackIndex
-        , toStackType : StackType
-        }
-    | Faceup StackLocation
+        RemoveFullStack stackLocation ->
+            game
+
+
+findCompletedStacks : Game -> List Move
+findCompletedStacks game =
+    []
+
+
+lastCardOfStack : List Card -> Maybe ( Card, CardIndex )
+lastCardOfStack cards =
+    List.Extra.unconsLast cards
+        |> Maybe.map
+            (\( lastCard, _ ) ->
+                ( lastCard, CardIndex (List.length cards - 1) )
+            )
+
+
+topmostCards : Game -> List ( StackLocation, Card )
+topmostCards game =
+    game.gameSlots
+        |> List.indexedMap
+            (\stackIdx cards ->
+                lastCardOfStack cards
+                    |> Maybe.map
+                        (\( lastCard, cardIndex ) ->
+                            ( { stackType = PlayStack, stackIndex = StackIndex stackIdx, cardIndex = cardIndex }, lastCard )
+                        )
+            )
+        |> Maybe.Extra.values
+
+
+findFaceUpMoves : Game -> List Move
+findFaceUpMoves game =
+    topmostCards game
+        |> List.filter (\( _, card ) -> not card.isFacedUp)
+        |> List.map Tuple.first
+        |> List.map Faceup
+
+
+faceUpTopmostCards : Game -> Game
+faceUpTopmostCards game =
+    let
+        faceupTopmostOfStack : List Card -> List Card
+        faceupTopmostOfStack cards =
+            case List.Extra.unconsLast cards of
+                Just ( last, others ) ->
+                    others ++ [ { last | isFacedUp = True } ]
+
+                Nothing ->
+                    []
+    in
+    { game | gameSlots = List.map faceupTopmostOfStack game.gameSlots }
 
 
 isValidMove : Game -> StackLocation -> StackLocation -> Bool

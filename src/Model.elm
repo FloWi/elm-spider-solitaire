@@ -36,7 +36,7 @@ type alias Card =
 type alias Game =
     { gameSlots : List (List Card)
     , drawCardSlots : List (List Card)
-    , moves : List Move
+    , moves : List (List Move)
     , completedCardSlots : List (List Card)
     , isDebug : Bool
     , seedValue : Int
@@ -47,11 +47,21 @@ type alias Game =
 
 
 type Move
-    = DrawNewCards
-
-
-
---| MoveCardStack { startCardIndex : CardIndex, cardStack : CardStack, destinationSlotIndex : Int }
+    = MoveCard
+        { fromStackLocation : StackLocation
+        , fromCard : Card
+        , toStackLocation : StackLocation
+        , toCard : Card
+        }
+    | MoveToEmptyStack
+        { fromStackLocation : StackLocation
+        , fromCard : Card
+        , toStackIndex : StackIndex
+        , toStackType : StackType
+        }
+    | Faceup StackLocation
+    | DrawNewCards
+    | RemoveFullStack StackLocation
 
 
 type Model

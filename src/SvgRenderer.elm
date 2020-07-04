@@ -192,7 +192,7 @@ renderCard card selectedCardLocation stackLocation location =
                 , width (String.fromFloat renderOptions.cardWidth)
                 , height (String.fromFloat renderOptions.cardHeight)
                 , xlinkHref (cardImgUrl card)
-                , onClick (ClickedCard stackLocation card)
+                , onClick (ClickedCard stackLocation)
                 , class
                     (if isSelectedCard then
                         "isSelected"
