@@ -10,6 +10,8 @@ import Messages exposing (..)
 import Model exposing (..)
 import Random exposing (..)
 import Random.List
+import Svg exposing (svg)
+import Svg.Attributes exposing (xlinkHref)
 import SvgRenderer exposing (..)
 
 
@@ -597,6 +599,16 @@ view model =
         , div [ Html.Attributes.class "footer" ]
             [ h1 [] [ text "Footer" ]
             ]
+        ]
+
+
+renderSpriteSheet : Model -> Html Msg
+renderSpriteSheet model =
+    div []
+        [ h1 [] [ text "hello spritesheet" ]
+
+        -- , Html.img [ Html.Attributes.src "%PUBLIC_URL%/better_cards/bridge-cards/sprite-sheet.svg" ] []
+        , renderWholeCardDeckSvg model
         ]
 
 

@@ -116,7 +116,7 @@ rankString rank =
             "J"
 
         R10 ->
-            "10"
+            "T"
 
         R9 ->
             "9"
@@ -280,4 +280,4 @@ cardFileName card =
 
 cardImgUrl : Card -> String
 cardImgUrl card =
-    "%PUBLIC_URL%/cards/cards/" ++ cardFileName card
+    "%PUBLIC_URL%/better_cards/sprite-sheet.svg#" ++ rankString card.rank ++ suitString card.suit

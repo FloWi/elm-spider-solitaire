@@ -1,14 +1,62 @@
 module SvgRenderer exposing (..)
 
+import Dict
+import Dict.Extra
 import Html exposing (Html, div)
 import Html.Attributes
 import Maybe.Extra
 import Messages exposing (..)
 import Model exposing (..)
-import Svg exposing (Svg, svg)
+import Svg exposing (Svg, svg, use)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick)
 import SvgRenderOptions exposing (renderOptions)
+
+
+viewBoxString =
+    [ 0, 0, renderOptions.gameWidth, renderOptions.gameHeight ]
+        |> List.map String.fromInt
+        |> String.join " "
+
+
+renderWholeCardDeckSvg : Model -> Svg Msg
+renderWholeCardDeckSvg model =
+    let
+        cardsBySuit : List ( String, List Card )
+        cardsBySuit =
+            calcDeck
+                |> Dict.Extra.groupBy (\card -> suitString card.suit)
+                |> Dict.map (\_ -> List.sortBy cardRank)
+                |> Dict.toList
+
+        renderCardHelper : Int -> Int -> Card -> Svg Msg
+        renderCardHelper suitIdx cardIdx card =
+            use
+                [ x (String.fromFloat (toFloat cardIdx * renderOptions.cardWidth))
+                , y (String.fromFloat (toFloat suitIdx * renderOptions.cardHeight))
+                , height (String.fromFloat renderOptions.cardHeight)
+                , width (String.fromFloat renderOptions.cardWidth)
+                , xlinkHref (cardImgUrl card)
+                ]
+                []
+
+        cardSvgs : List (Svg Msg)
+        cardSvgs =
+            cardsBySuit
+                |> List.indexedMap (\suitIdx ( _, cards ) -> List.indexedMap (\cardIdx card -> renderCardHelper suitIdx cardIdx card) cards)
+                |> List.concatMap identity
+    in
+    svg
+        [ class "svgGame"
+        , preserveAspectRatio "xMinYMin meet"
+        , viewBox viewBoxString
+        ]
+        cardSvgs
+
+
+
+-- <use x="0" xlink:href="#1J" />
+-- <use x="300" xlink:href="#2J" />
 
 
 renderGameBoard : Model -> Svg Msg
@@ -24,11 +72,6 @@ renderGameBoard model =
 
                     else
                         ( "content", [] )
-
-                viewBoxString =
-                    [ 0, 0, renderOptions.gameWidth, renderOptions.gameHeight ]
-                        |> List.map String.fromInt
-                        |> String.join " "
             in
             div
                 [ Html.Attributes.class containerClass
@@ -186,7 +229,7 @@ renderCard card selectedCardLocation stackLocation location =
                     False
 
         cardImage =
-            Svg.image
+            Svg.use
                 [ x (String.fromInt location.x)
                 , y (String.fromInt location.y)
                 , width (String.fromFloat renderOptions.cardWidth)
