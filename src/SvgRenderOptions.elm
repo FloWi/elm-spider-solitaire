@@ -23,7 +23,7 @@ cardWidth =
 
 cardAspectRatio : Float
 cardAspectRatio =
-    224 / 313
+    216 / 336
 
 
 renderOptions :
