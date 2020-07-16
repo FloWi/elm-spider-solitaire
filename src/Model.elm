@@ -272,12 +272,16 @@ cardFileName card =
     in
     case card.isFacedUp of
         True ->
-            cardFilenameString ++ ".svg"
+            cardFilenameString
 
         False ->
-            "RED_BACK.svg"
+            "2B"
 
 
 cardImgUrl : Card -> String
 cardImgUrl card =
-    "%PUBLIC_URL%/better_cards/sprite-sheet.svg#" ++ rankString card.rank ++ suitString card.suit
+    if card.isFacedUp then
+        "%PUBLIC_URL%/better_cards/sprite-sheet.svg#" ++ cardFileName card
+
+    else
+        "%PUBLIC_URL%/better_cards/2B.svg"

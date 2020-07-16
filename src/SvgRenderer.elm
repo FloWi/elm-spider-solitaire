@@ -7,7 +7,7 @@ import Html.Attributes
 import Maybe.Extra
 import Messages exposing (..)
 import Model exposing (..)
-import Svg exposing (Svg, svg, use)
+import Svg exposing (Attribute, Svg, svg, use)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick)
 import SvgRenderOptions exposing (renderOptions)
@@ -26,12 +26,12 @@ renderWholeCardDeckSvg model =
         cardsBySuit =
             calcDeck
                 |> Dict.Extra.groupBy (\card -> suitString card.suit)
-                |> Dict.map (\_ -> List.sortBy cardRank)
+                |> Dict.map (\_ -> \cards -> (cards |> List.sortBy cardRank |> List.map (\c -> { c | isFacedUp = True })) ++ [ { rank = Ace, suit = Clubs, isFacedUp = False } ])
                 |> Dict.toList
 
         renderCardHelper : Int -> Int -> Card -> Svg Msg
         renderCardHelper suitIdx cardIdx card =
-            use
+            renderCardSvgTagFn card
                 [ x (String.fromFloat (toFloat cardIdx * renderOptions.cardWidth))
                 , y (String.fromFloat (toFloat suitIdx * renderOptions.cardHeight))
                 , height (String.fromFloat renderOptions.cardHeight)
@@ -217,6 +217,20 @@ renderCardStack selectedCardLocation cards stackBasePosition stackindex stacktyp
         |> Svg.g []
 
 
+{-| the svg graphic for the facedDown card uses a fill that references a pattern (by url to the pattern-id inside the sprite-map).
+This is broken in most browsers and partially works in firefox.
+As a workaround I excluded the faced-down card from the sprite-map and have it as a separate svg file.
+This has to be loaded as an <image> instead of a <use>
+-}
+renderCardSvgTagFn : Card -> (List (Attribute msg) -> List (Svg msg) -> Svg msg)
+renderCardSvgTagFn card =
+    if card.isFacedUp then
+        Svg.use
+
+    else
+        Svg.image
+
+
 renderCard : Card -> Maybe StackLocation -> StackLocation -> Location -> Svg Msg
 renderCard card selectedCardLocation stackLocation location =
     let
@@ -229,7 +243,7 @@ renderCard card selectedCardLocation stackLocation location =
                     False
 
         cardImage =
-            Svg.use
+            renderCardSvgTagFn card
                 [ x (String.fromInt location.x)
                 , y (String.fromInt location.y)
                 , width (String.fromFloat renderOptions.cardWidth)
@@ -269,7 +283,7 @@ renderDrawNewCardSlots drawNewCardSlots =
                     location =
                         locationByIndex i card
                 in
-                Svg.image
+                renderCardSvgTagFn card
                     ([ x (String.fromInt location.x)
                      , y (String.fromInt location.y)
                      , width (String.fromInt (round renderOptions.cardWidth))
