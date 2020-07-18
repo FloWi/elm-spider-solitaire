@@ -22,7 +22,10 @@
   "homepage": "https://github.com/FloWi/elm-spider-solitaire#readme",
   "devDependencies": {
     "create-elm-app": "^4.2.23",
-    "elm-format": "^0.8.3"
+    "elm-format": "^0.8.3",
+    "svgson-cli": "^1.1.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "xml2json-cli": "^1.1.1"
+  }
 }

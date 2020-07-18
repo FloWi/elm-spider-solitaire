@@ -15,3 +15,6 @@ node_modules
 
 .idea
 public/cards
+public/better_cards/download.zip
+public/better_cards/ranks.json
+public/better_cards/suits.json
