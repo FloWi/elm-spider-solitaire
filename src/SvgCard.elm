@@ -1,32 +1,11 @@
 module SvgCard exposing (..)
 
-import Dict
 import Html
 import Messages exposing (Msg)
 import Model exposing (Card, Rank(..), Suit(..))
-import RankSvgSymbol exposing (rankId, rankSvgSymbol)
-import Svg exposing (Attribute, Svg, g, rect, svg, symbol, use)
+import Svg exposing (Attribute, Svg, g, rect, svg, use)
 import Svg.Attributes exposing (..)
-
-
-suitSvgSymbol : Suit -> Svg msg
-suitSvgSymbol suit =
-    case suit of
-        Spades ->
-            symbol
-                [ id "symbol-spades"
-                , viewBox "-600 -600 1200 1200"
-                , preserveAspectRatio "xMinYMid"
-                ]
-                [ Svg.path
-                    [ d "M0 -500C100 -250 355 -100 355 185A150 150 0 0 1 55 185A10 10 0 0 0 35 185C35 385 85 400 130 500L-130 500C-85 400 -35 385 -35 185A10 10 0 0 0 -55 185A150 150 0 0 1 -355 185C-355 -100 -100 -250 0 -500Z"
-                    , fill "black"
-                    ]
-                    []
-                ]
-
-        _ ->
-            svg [] []
+import SvgSymbols exposing (rankId, rankSvgSymbol, suitId, suitSvgSymbol)
 
 
 border =
@@ -47,14 +26,14 @@ cardSvg : List (Html.Attribute Msg) -> Card -> Svg Msg
 cardSvg attributes card =
     let
         rankSymbol =
-            rankSvgSymbol card.rank
+            rankSvgSymbol card.rank card.suit
 
         suitSymbol =
             suitSvgSymbol card.suit
 
         topLeftRank =
             use
-                [ xlinkHref ("#" ++ rankId card.rank)
+                [ xlinkHref ("#" ++ rankId card.rank card.suit)
                 , height "32"
                 , x "-114.4"
                 , y "-156"
@@ -63,7 +42,7 @@ cardSvg attributes card =
 
         topLeftSuit =
             use
-                [ xlinkHref "#symbol-spades"
+                [ xlinkHref ("#" ++ suitId card.suit)
                 , height "26.769"
                 , x "-111.784"
                 , y "-119"
@@ -72,7 +51,7 @@ cardSvg attributes card =
 
         suits =
             use
-                [ xlinkHref "#symbol-spades"
+                [ xlinkHref ("#" ++ suitId card.suit)
                 , height "70"
                 , x "-35"
                 , y "-135.501"

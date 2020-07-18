@@ -84,6 +84,22 @@ suitUtf8Symbol suit =
             "♠"
 
 
+suitColor : Suit -> String
+suitColor suit =
+    case suit of
+        Clubs ->
+            "black"
+
+        Diamonds ->
+            "red"
+
+        Hearts ->
+            "red"
+
+        Spades ->
+            "black"
+
+
 suitString : Suit -> String
 suitString suit =
     case suit of
