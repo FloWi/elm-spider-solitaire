@@ -619,7 +619,7 @@ renderSpriteSheet model =
 main : Program () Model Msg
 main =
     Browser.element
-        { view = view
+        { view = renderSpriteSheet
         , init = \_ -> init
         , update = update
         , subscriptions = always Sub.none

@@ -145,7 +145,12 @@ rankString rank =
 
 cardRank : Card -> Int
 cardRank card =
-    case card.rank of
+    rankValue card.rank
+
+
+rankValue : Rank -> Int
+rankValue rank =
+    case rank of
         King ->
             13
 

@@ -10,6 +10,7 @@ import Model exposing (..)
 import Svg exposing (Attribute, Svg, svg, use)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick)
+import SvgCard
 import SvgRenderOptions exposing (renderOptions)
 
 
@@ -29,16 +30,25 @@ renderWholeCardDeckSvg model =
                 |> Dict.map (\_ -> \cards -> (cards |> List.sortBy cardRank |> List.map (\c -> { c | isFacedUp = True })) ++ [ { rank = Ace, suit = Clubs, isFacedUp = False } ])
                 |> Dict.toList
 
+        --renderCardHelper : Int -> Int -> Card -> Svg Msg
+        --renderCardHelper suitIdx cardIdx card =
+        --    renderCardSvgTagFn card
+        --        [ x (String.fromFloat (toFloat cardIdx * renderOptions.cardWidth))
+        --        , y (String.fromFloat (toFloat suitIdx * renderOptions.cardHeight))
+        --        , height (String.fromFloat renderOptions.cardHeight)
+        --        , width (String.fromFloat renderOptions.cardWidth)
+        --        , xlinkHref (cardImgUrl card)
+        --        ]
+        --        []
         renderCardHelper : Int -> Int -> Card -> Svg Msg
         renderCardHelper suitIdx cardIdx card =
-            renderCardSvgTagFn card
+            SvgCard.cardSvg
                 [ x (String.fromFloat (toFloat cardIdx * renderOptions.cardWidth))
                 , y (String.fromFloat (toFloat suitIdx * renderOptions.cardHeight))
                 , height (String.fromFloat renderOptions.cardHeight)
                 , width (String.fromFloat renderOptions.cardWidth)
-                , xlinkHref (cardImgUrl card)
                 ]
-                []
+                card
 
         cardSvgs : List (Svg Msg)
         cardSvgs =
