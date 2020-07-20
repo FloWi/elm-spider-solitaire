@@ -14,7 +14,7 @@ rankSvgSymbol rank suit =
     let
         c : String
         c =
-            Debug.log "color" (suitColor suit)
+            suitColor suit
 
         rankSymbol pathData =
             symbol
@@ -23,7 +23,7 @@ rankSvgSymbol rank suit =
                 , preserveAspectRatio "xMinYMid"
                 ]
                 [ Svg.path
-                    [ stroke (Debug.log (" id: " ++ Debug.toString (rankId rank) ++ " suit: " ++ Debug.toString suit) c)
+                    [ stroke c
                     , d pathData
                     , strokeWidth "80"
                     , strokeLinecap "square"
@@ -74,7 +74,7 @@ rankSvgSymbol rank suit =
                 Ace ->
                     rankSymbol "M-270 460L-110 460M-200 450L0 -460L200 450M110 460L270 460M-120 130L120 130"
     in
-    Debug.log "result" result
+    result
 
 
 suitId suit =
