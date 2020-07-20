@@ -606,8 +606,6 @@ renderSpriteSheet : Model -> Html Msg
 renderSpriteSheet model =
     div []
         [ h1 [] [ text "hello custom cards" ]
-
-        -- , Html.img [ Html.Attributes.src "%PUBLIC_URL%/better_cards/bridge-cards/sprite-sheet.svg" ] []
         , renderWholeCardDeckSvg model
         ]
 
@@ -619,7 +617,7 @@ renderSpriteSheet model =
 main : Program () Model Msg
 main =
     Browser.element
-        { view = renderSpriteSheet
+        { view = view
         , init = \_ -> init
         , update = update
         , subscriptions = always Sub.none

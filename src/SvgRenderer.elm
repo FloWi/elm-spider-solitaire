@@ -10,7 +10,7 @@ import Model exposing (..)
 import Svg exposing (Attribute, Svg, svg, use)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (onClick)
-import SvgCard
+import SvgCard exposing (cardSvg)
 import SvgRenderOptions exposing (renderOptions)
 
 
@@ -250,26 +250,22 @@ renderCard card selectedCardLocation stackLocation location =
 
                 Nothing ->
                     False
-
-        cardImage =
-            renderCardSvgTagFn card
-                [ x (String.fromInt location.x)
-                , y (String.fromInt location.y)
-                , width (String.fromFloat renderOptions.cardWidth)
-                , height (String.fromFloat renderOptions.cardHeight)
-                , xlinkHref (cardImgUrl card)
-                , onClick (ClickedCard stackLocation)
-                , class
-                    (if isSelectedCard then
-                        "isSelected"
-
-                     else
-                        "notSelected"
-                    )
-                ]
-                []
     in
-    cardImage
+    cardSvg
+        [ x (String.fromInt location.x)
+        , y (String.fromInt location.y)
+        , width (String.fromFloat renderOptions.cardWidth)
+        , height (String.fromFloat renderOptions.cardHeight)
+        , onClick (ClickedCard stackLocation)
+        , class
+            (if isSelectedCard then
+                "isSelected"
+
+             else
+                "notSelected"
+            )
+        ]
+        card
 
 
 renderDrawNewCardSlots : List (List Card) -> Svg Msg
@@ -292,12 +288,11 @@ renderDrawNewCardSlots drawNewCardSlots =
                     location =
                         locationByIndex i card
                 in
-                renderCardSvgTagFn card
+                cardSvg
                     ([ x (String.fromInt location.x)
                      , y (String.fromInt location.y)
                      , width (String.fromInt (round renderOptions.cardWidth))
                      , height (String.fromInt (round renderOptions.cardHeight))
-                     , xlinkHref (cardImgUrl card)
                      ]
                         ++ (if i == List.length drawNewCardSlots - 1 then
                                 [ onClick DrawNewCard ]
@@ -306,6 +301,6 @@ renderDrawNewCardSlots drawNewCardSlots =
                                 []
                            )
                     )
-                    []
+                    card
             )
         |> Svg.g []
