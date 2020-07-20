@@ -1,5 +1,6 @@
 module SvgCard exposing (..)
 
+import CourtCards exposing (..)
 import Html
 import Messages exposing (Msg)
 import Model exposing (Card, Rank(..), Suit(..))
@@ -184,6 +185,11 @@ innerSuitPositions card =
             , nonSymmetric = []
             }
 
+        Ace ->
+            { symmetric = []
+            , nonSymmetric = [ ( RowCenter, ColCenter ) ]
+            }
+
         _ ->
             { symmetric =
                 []
@@ -192,10 +198,6 @@ innerSuitPositions card =
 
 
 
---Ace ->
---            { symmetric = []
---            , nonSymmetric = [ ( RowCenter, ColCenter ) ]
---            }
 --Jack ->
 --    { symmetric =
 --        [ ( RowCourtCardTop, ColCourtCardLeft )
@@ -246,9 +248,6 @@ cardSvg attributes card =
                 Jack ->
                     True
 
-                Ace ->
-                    True
-
                 _ ->
                     False
 
@@ -261,7 +260,64 @@ cardSvg attributes card =
 
         courtHouseSymbol =
             if isCourthouse card.rank then
-                [ useFn (rankId card.rank card.suit) 164.8 { x = -82.8, y = -82.4 } ]
+                let
+                    result =
+                        case ( card.rank, card.suit ) of
+                            ( King, Hearts ) ->
+                                Just ( kingOfHearts, "#kingOfHearts" )
+
+                            ( King, Spades ) ->
+                                Just ( kingOfSpades, "#kingOfSpades" )
+
+                            ( King, Clubs ) ->
+                                Just ( kingOfClubs, "#kingOfClubs" )
+
+                            ( Queen, Hearts ) ->
+                                Just ( queenOfHearts, "#queenOfHearts" )
+
+                            ( Queen, Spades ) ->
+                                Just ( queenOfSpades, "#queenOfSpades" )
+
+                            ( Queen, Clubs ) ->
+                                Just ( queenOfClubs, "#queenOfClubs" )
+
+                            ( Jack, Hearts ) ->
+                                Just ( jackOfHearts, "#jackOfHearts" )
+
+                            ( Jack, Spades ) ->
+                                Just ( jackOfSpades, "#jackOfSpades" )
+
+                            ( Jack, Clubs ) ->
+                                Just ( jackOfClubs, "#jackOfClubs" )
+
+                            ( King, Diamonds ) ->
+                                Just ( kingOfDiamonds, "#kingOfDiamonds" )
+
+                            ( Queen, Diamonds ) ->
+                                Just ( queenOfDiamonds, "#queenOfDiamonds" )
+
+                            ( Jack, Diamonds ) ->
+                                Just ( jackOfDiamonds, "#jackOfDiamonds" )
+
+                            _ ->
+                                Nothing
+                in
+                case result of
+                    Just ( symbolFn, identifier ) ->
+                        [ symbolFn
+                        , use
+                            [ x "-120"
+                            , y "-168"
+                            , xlinkHref identifier
+
+                            --, width "1in"
+                            --, height "3.4in"
+                            ]
+                            []
+                        ]
+
+                    Nothing ->
+                        [ useFn (rankId card.rank card.suit) 164.8 { x = -82.8, y = -82.4 } ]
 
             else
                 []
