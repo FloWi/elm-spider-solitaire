@@ -49,3 +49,6 @@ unzip -p $zip_file \
 #   svg_content=$(unzip -p $zip_file $filename)
 #
 # done
+
+# convert svg to elm
+# https://levelteams.com/svg-to-elm
