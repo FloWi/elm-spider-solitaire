@@ -25,7 +25,10 @@ renderWholeCardDeckSvg model =
     let
         facedUpCopy : List Card -> List Card
         facedUpCopy cards =
-            cards |> List.map (\c -> { c | isFacedUp = False })
+            cards
+                |> List.head
+                |> Maybe.map (\c -> { c | isFacedUp = False })
+                |> Maybe.Extra.toList
 
         cardsBySuit : List ( String, List Card )
         cardsBySuit =
@@ -34,23 +37,11 @@ renderWholeCardDeckSvg model =
                 |> Dict.map (\_ -> \cards -> (cards |> List.sortBy cardRank |> List.map (\c -> { c | isFacedUp = True })) ++ (facedUpCopy cards |> List.head |> Maybe.Extra.toList))
                 |> Dict.toList
 
-        --renderCardHelper : Int -> Int -> Card -> Svg Msg
-        --renderCardHelper suitIdx cardIdx card =
-        --    renderCardSvgTagFn card
-        --        [ x (String.fromFloat (toFloat cardIdx * renderOptions.cardWidth))
-        --        , y (String.fromFloat (toFloat suitIdx * renderOptions.cardHeight))
-        --        , height (String.fromFloat renderOptions.cardHeight)
-        --        , width (String.fromFloat renderOptions.cardWidth)
-        --        , xlinkHref (cardImgUrl card)
-        --        ]
-        --        []
         renderCardHelper : Int -> Int -> Card -> Svg Msg
         renderCardHelper suitIdx cardIdx card =
             SvgCard.cardSvg
                 [ x (String.fromFloat (toFloat cardIdx * renderOptions.cardWidth))
                 , y (String.fromFloat (toFloat suitIdx * renderOptions.cardHeight))
-                , height (String.fromFloat renderOptions.cardHeight)
-                , width (String.fromFloat renderOptions.cardWidth)
                 ]
                 card
 
@@ -60,15 +51,19 @@ renderWholeCardDeckSvg model =
                 |> List.indexedMap (\suitIdx ( _, cards ) -> List.indexedMap (\cardIdx card -> renderCardHelper suitIdx cardIdx card) cards)
                 |> List.concatMap identity
     in
-    svg
-        [ class "svgGame"
-        , preserveAspectRatio "xMinYMin meet"
-        , viewBox viewBoxString
-        ]
-        cardSvgs
+    div [ class "cardOverview" ]
+        (cardSvgs
+            |> List.map (\svg -> div [ class "card" ] [ svg ])
+        )
 
 
 
+--svg
+--    [ class "svgGame"
+--    , preserveAspectRatio "xMinYMin meet"
+--    , viewBox viewBoxString
+--    ]
+--    cardSvgs
 -- <use x="0" xlink:href="#1J" />
 -- <use x="300" xlink:href="#2J" />
 

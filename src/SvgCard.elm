@@ -292,9 +292,7 @@ cardSvg attributes card =
     in
     svg
         ([ class "card"
-         , height "3.5in"
-         , width "2.5in"
-         , preserveAspectRatio "none"
+         , preserveAspectRatio "xMinYMid"
          , viewBox "-120 -168 240 336"
          ]
             ++ attributes
