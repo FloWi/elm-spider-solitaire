@@ -23,11 +23,15 @@ viewBoxString =
 renderWholeCardDeckSvg : Model -> Svg Msg
 renderWholeCardDeckSvg model =
     let
+        facedUpCopy : List Card -> List Card
+        facedUpCopy cards =
+            cards |> List.map (\c -> { c | isFacedUp = False })
+
         cardsBySuit : List ( String, List Card )
         cardsBySuit =
             calcDeck
                 |> Dict.Extra.groupBy (\card -> suitString card.suit)
-                |> Dict.map (\_ -> \cards -> (cards |> List.sortBy cardRank |> List.map (\c -> { c | isFacedUp = True })) ++ [ { rank = Ace, suit = Clubs, isFacedUp = False } ])
+                |> Dict.map (\_ -> \cards -> (cards |> List.sortBy cardRank |> List.map (\c -> { c | isFacedUp = True })) ++ (facedUpCopy cards |> List.head |> Maybe.Extra.toList))
                 |> Dict.toList
 
         --renderCardHelper : Int -> Int -> Card -> Svg Msg
